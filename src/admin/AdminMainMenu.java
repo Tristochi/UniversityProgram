@@ -1,117 +1,69 @@
-package org.example.admin;
+package admin;
 
-import org.example.GUILookAndFeel;
+import java.awt.Dimension;
+import java.awt.EventQueue;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.JFrame;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.ColumnSpec;
+import com.jgoodies.forms.layout.RowSpec;
 
-// Main Menu to navigate to other admin forms
-public class AdminMainMenu extends JFrame{
-    private JPanel contentPane;
-    private JButton createAccountFormButton;
-    private JButton createCourseFormButton;
-    private JButton modifyAccountDetailsButton;
-    private JButton modifyCoursesButton;
-    private JButton removeCourseButton;
-    private JButton removeStudentFromCourseButton;
-    private JButton studentAppointmentsButton;
+import dbconnect.DBConnect;
 
-    public AdminMainMenu() {
-        // Display frame
-        setTitle("Admin View");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setContentPane(contentPane);
-        pack();
-        GUILookAndFeel.setLookAndFeel();
-        this.setMinimumSize(new Dimension(500, 300));
+import com.jgoodies.forms.layout.FormSpecs;
+import javax.swing.JTabbedPane;
+import javax.swing.JPanel;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.FlowLayout;
+import javax.swing.BoxLayout;
 
-        // Add listeners
-        createAccountFormButtonListener();
-        createCourseFormButtonListener();
-        modifyCoursesButtonListener();
-        modifyAccountDetailsButtonListener();
-        removeCourseButtonListener();
-        removeStudentFromCourseButtonListener();
-        studentAppointmentsButtonListener();
-    }
+public class AdminMainMenu{
 
-    private void createAccountFormButtonListener() {
-        createAccountFormButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // change pane when this button is clicked
-                dispose();
-                CreateAccountForm createAccountForm = new CreateAccountForm();
-                createAccountForm.setVisible(true);
-            }
-        });
-    }
+	private JFrame frmAdminView;
 
-    private void createCourseFormButtonListener() {
-        createCourseFormButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                CreateCourseForm createCourseForm = new CreateCourseForm();
-                createCourseForm.setVisible(true);
-            }
-        });
-    }
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		DBConnect.connect();
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					AdminMainMenu window = new AdminMainMenu();
+					window.frmAdminView.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
 
-    private void modifyAccountDetailsButtonListener() {
-        modifyAccountDetailsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                ModifyAccountDetailsForm modifyAccountDetailsForm = new ModifyAccountDetailsForm();
-                modifyAccountDetailsForm.setVisible(true);
-            }
-        });
-    }
+	/**
+	 * Create the application.
+	 */
+	public AdminMainMenu() {
+		initialize();
+	}
 
-    private void modifyCoursesButtonListener() {
-        modifyCoursesButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                ModifyCourseForm modifyCourseForm = new ModifyCourseForm();
-                modifyCourseForm.setVisible(true);
-            }
-        });
-    }
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frmAdminView = new JFrame();
+		frmAdminView.setTitle("Admin View");
+		frmAdminView.setBounds(100, 100, 700, 450);
+		frmAdminView.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmAdminView.getContentPane().setLayout(new BoxLayout(frmAdminView.getContentPane(), BoxLayout.X_AXIS));
+		
+		JTabbedPane jTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		frmAdminView.getContentPane().add(jTabbedPane);
+		
+		CreateAccountForm createAccountForm = new CreateAccountForm();
+		jTabbedPane.addTab("Create Account", null, createAccountForm, null);
+		
+		CreateCourseForm createCourseForm = new CreateCourseForm();
+		jTabbedPane.addTab("Create Course", null, createCourseForm, null);
+	}
 
-    private void removeCourseButtonListener() {
-        removeCourseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                RemoveCourseForm removeCourseForm = new RemoveCourseForm();
-                removeCourseForm.setVisible(true);
-            }
-        });
-    }
-
-    private void removeStudentFromCourseButtonListener() {
-        removeStudentFromCourseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                RemoveStudentCourseForm removeStudentCourseForm = new RemoveStudentCourseForm();
-                removeStudentCourseForm.setVisible(true);
-            }
-        });
-    }
-
-    private void studentAppointmentsButtonListener() {
-        studentAppointmentsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                StudentAppointmentForm studentAppointmentForm = new StudentAppointmentForm();
-                studentAppointmentForm.setVisible(true);
-            }
-        });
-    }
 }

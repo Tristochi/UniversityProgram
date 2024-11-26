@@ -1,4 +1,4 @@
-package org.example;
+package GUILook;
 
 import javax.swing.*;
 
