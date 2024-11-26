@@ -6,9 +6,11 @@ CREATE TABLE Account_Types (
     PRIMARY KEY(account_type_id)
 );
 
+INSERT INTO account_types VALUES (1, 'Student'), (2, 'Professor'), (3, 'Admin');
+
 CREATE TABLE Accounts(
-	user_id INT,
-    username VARCHAR(255),
+	user_id INT AUTO_INCREMENT,
+    username VARCHAR(255) UNIQUE ,
     password VARCHAR(255),
     is_password_temporary bool,
     account_type_id INT,
@@ -30,17 +32,26 @@ CREATE TABLE Professors(
     PRIMARY KEY(professor_id)
 );
 
+CREATE TABLE Semesters(
+    semester VARCHAR(255),
+    PRIMARY KEY (semester)
+);
+
+INSERT INTO Semesters VALUES ('Fall 2024'), ('Spring 2025'), ('Fall 2025');
+
 CREATE TABLE Courses(
-	course_id INT,
+	course_id INT AUTO_INCREMENT,
     course_name VARCHAR(255),
     course_semester VARCHAR(255),
-    course_time VARCHAR(255),
+    start_time VARCHAR(255),
+    end_time VARCHAR(255),
     course_day VARCHAR(255),
     course_description VARCHAR(255),
     max_students INT,
     professor_id INT,
     PRIMARY KEY(course_id),
-    FOREIGN KEY(professor_id) REFERENCES Professors(professor_id)
+    FOREIGN KEY(professor_id) REFERENCES Professors(professor_id),
+    FOREIGN KEY(course_semester) REFERENCES Semesters(semester)
 );
 
 CREATE TABLE Course_Requests(
