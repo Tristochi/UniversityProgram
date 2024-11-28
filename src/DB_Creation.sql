@@ -86,3 +86,5 @@ CREATE TABLE Appointments(
     FOREIGN KEY(professor_id) REFERENCES Professors(professor_id),
     FOREIGN KEY(student_id) REFERENCES Students(student_id)
 );
+
+SELECT * FROM ACCOUNTS;

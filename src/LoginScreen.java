@@ -8,6 +8,8 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import dbconnect.DBConnect;
+import professor.ProfessorMainMenu;
+import admin.AdminMainMenu;
 
 public class LoginScreen {
 
@@ -130,16 +132,18 @@ public class LoginScreen {
 					break;
 				case 2:
 					//Professor
+					goToProfessorMenu();
 					break;
 				case 3:
 					//Admin
+					goToAdminMenu();
 					break;
 				default:
 					System.out.println("nothing");
 				}
 			}
 		}catch (Exception e) {
-			
+			System.out.println(e);
 		}
 	}
 	
@@ -149,5 +153,21 @@ public class LoginScreen {
 		screen.initialize();
 		screen.frame.setVisible(true);
 		System.out.println("Display Main Menu");
+	}
+	
+	public void goToProfessorMenu() {
+		frame.dispose();
+		ProfessorMainMenu screen = new ProfessorMainMenu();
+		screen.initialize();
+		screen.frame.setVisible(true);
+		System.out.println("Display Professor Menu");
+	}
+	
+	public void goToAdminMenu() {
+		frame.dispose();
+		AdminMainMenu screen = new AdminMainMenu();
+		screen.initialize();
+		screen.frmAdminView.setVisible(true);
+		System.out.println("Display Admin Menu");
 	}
 }

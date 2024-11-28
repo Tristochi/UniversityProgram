@@ -20,7 +20,7 @@ import javax.swing.BoxLayout;
 
 public class AdminMainMenu{
 
-	private JFrame frmAdminView;
+	public JFrame frmAdminView;
 
 	/**
 	 * Launch the application.
@@ -49,7 +49,7 @@ public class AdminMainMenu{
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	public void initialize() {
 		frmAdminView = new JFrame();
 		frmAdminView.setTitle("Admin View");
 		frmAdminView.setBounds(100, 100, 700, 450);
