@@ -1,10 +1,13 @@
 import java.awt.EventQueue;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.sql.*;
 import java.awt.event.ActionEvent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
+import dbconnect.DBConnect;
 
 public class LoginScreen {
 
@@ -43,6 +46,8 @@ public class LoginScreen {
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		DBConnect.connect();
+		setupClosingDBConnection();
 		
 		createUserLabel();
 		createUserTextField();
@@ -50,6 +55,19 @@ public class LoginScreen {
 		createPasswordTextField();
 		createSubmitBtn();
 
+	}
+	
+	public void setupClosingDBConnection() {
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			public void run() {
+				try { 
+					DBConnect.connection.close();
+					System.out.println("Application Closed - DB Connection Closed");
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}, "Shutdown-thread"));
 	}
 	
 	public void createUserLabel() {
@@ -85,10 +103,44 @@ public class LoginScreen {
 		frame.getContentPane().add(submitBtn);
 		submitBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				goToMainMenu();
+				//goToMainMenu();
+				String username = usernameTextField.getText();
+				String password = passwordTextField.getText();
+				
+				verifyLogin(username, password);
 			}
 			
 		});
+	}
+	
+	public void verifyLogin(String username, String password) {
+		try {
+			Connection conn = DBConnect.connection;
+			String query = "SELECT * FROM Accounts WHERE username = '" + username + "'";
+			Statement stm = conn.createStatement();
+			ResultSet result = stm.executeQuery(query);
+			result.first();
+			
+			String dbPassword = result.getString("password");
+			if(password.equals(dbPassword)) {
+				int accountType = Integer.parseInt(result.getString("account_type_id"));
+				switch(accountType) {
+				case 1:
+					//Student
+					break;
+				case 2:
+					//Professor
+					break;
+				case 3:
+					//Admin
+					break;
+				default:
+					System.out.println("nothing");
+				}
+			}
+		}catch (Exception e) {
+			
+		}
 	}
 	
 	public void goToMainMenu() {
