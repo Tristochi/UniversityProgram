@@ -4,13 +4,13 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
+//import com.jgoodies.forms.layout.FormLayout;
+//import com.jgoodies.forms.layout.ColumnSpec;
+//import com.jgoodies.forms.layout.RowSpec;
 
 import dbconnect.DBConnect;
 
-import com.jgoodies.forms.layout.FormSpecs;
+//import com.jgoodies.forms.layout.FormSpecs;
 import javax.swing.JTabbedPane;
 import javax.swing.JPanel;
 import java.awt.GridBagLayout;

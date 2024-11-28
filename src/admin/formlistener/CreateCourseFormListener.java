@@ -24,7 +24,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.plaf.basic.BasicInternalFrameTitlePane.IconifyAction;
 
-import admin.ProfessorData;
+//import admin.ProfessorData;
 import custom.CustomComboBox;
 import custom.PopupDialog;
 import dbconnect.DBConnect;
