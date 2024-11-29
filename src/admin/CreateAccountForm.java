@@ -67,6 +67,7 @@ public class CreateAccountForm extends JPanel {
 		formPane.setLayout(gbl_formPane);
 		
 		accountTypeComboBox = new JComboBox();
+		accountTypeComboBox.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_accountTypeComboBox = new GridBagConstraints();
 		gbc_accountTypeComboBox.insets = new Insets(0, 0, 5, 0);
 		gbc_accountTypeComboBox.fill = GridBagConstraints.HORIZONTAL;
@@ -83,7 +84,7 @@ public class CreateAccountForm extends JPanel {
 	
 	private void createLabels() {
 		JLabel titleLabel = new JLabel("Create An Account");
-		titleLabel.setFont(new Font("Tahoma", Font.BOLD, 14));
+		titleLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
 		GridBagConstraints gbc_titleLabel = new GridBagConstraints();
 		gbc_titleLabel.insets = new Insets(0, 0, 5, 0);
 		gbc_titleLabel.gridx = 0;
@@ -91,7 +92,7 @@ public class CreateAccountForm extends JPanel {
 		add(titleLabel, gbc_titleLabel);
 		
 		JLabel usernameLabel = new JLabel("Username");
-		usernameLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		usernameLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 		GridBagConstraints gbc_usernameLabel = new GridBagConstraints();
 		gbc_usernameLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_usernameLabel.gridx = 0;
@@ -99,7 +100,7 @@ public class CreateAccountForm extends JPanel {
 		formPane.add(usernameLabel, gbc_usernameLabel);
 		
 		JLabel firstNameLabel = new JLabel("First Name");
-		firstNameLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		firstNameLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 		GridBagConstraints gbc_firstNameLabel = new GridBagConstraints();
 		gbc_firstNameLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_firstNameLabel.gridx = 0;
@@ -107,7 +108,7 @@ public class CreateAccountForm extends JPanel {
 		formPane.add(firstNameLabel, gbc_firstNameLabel);
 		
 		JLabel lastNameLabel = new JLabel("Last Name");
-		lastNameLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		lastNameLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 		GridBagConstraints gbc_lastNameLabel = new GridBagConstraints();
 		gbc_lastNameLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lastNameLabel.gridx = 0;
@@ -115,7 +116,7 @@ public class CreateAccountForm extends JPanel {
 		formPane.add(lastNameLabel, gbc_lastNameLabel);
 		
 		JLabel temporaryPasswordLabel = new JLabel("<HTML>Temporary<br>Password</HTML>");
-		temporaryPasswordLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		temporaryPasswordLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 		GridBagConstraints gbc_temporaryPasswordLabel = new GridBagConstraints();
 		gbc_temporaryPasswordLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_temporaryPasswordLabel.gridx = 0;
@@ -123,7 +124,7 @@ public class CreateAccountForm extends JPanel {
 		formPane.add(temporaryPasswordLabel, gbc_temporaryPasswordLabel);
 		
 		JLabel accountTypeLabel = new JLabel("Account Type");
-		accountTypeLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		accountTypeLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 		GridBagConstraints gbc_accountTypeLabel = new GridBagConstraints();
 		gbc_accountTypeLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_accountTypeLabel.gridx = 0;
@@ -133,6 +134,7 @@ public class CreateAccountForm extends JPanel {
 	
 	private void createTextFields() {
 		usernameTextField = new JTextField();
+		usernameTextField.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_usernameTextField = new GridBagConstraints();
 		gbc_usernameTextField.insets = new Insets(0, 0, 5, 0);
 		gbc_usernameTextField.fill = GridBagConstraints.HORIZONTAL;
@@ -142,6 +144,7 @@ public class CreateAccountForm extends JPanel {
 		usernameTextField.setColumns(10);
 		
 		firstNameTextField = new JTextField();
+		firstNameTextField.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_firstNameTextField = new GridBagConstraints();
 		gbc_firstNameTextField.insets = new Insets(0, 0, 5, 0);
 		gbc_firstNameTextField.fill = GridBagConstraints.HORIZONTAL;
@@ -151,6 +154,7 @@ public class CreateAccountForm extends JPanel {
 		firstNameTextField.setColumns(10);
 		
 		lastNameTextField = new JTextField();
+		lastNameTextField.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_lastNameTextField = new GridBagConstraints();
 		gbc_lastNameTextField.insets = new Insets(0, 0, 5, 0);
 		gbc_lastNameTextField.fill = GridBagConstraints.HORIZONTAL;
@@ -160,6 +164,7 @@ public class CreateAccountForm extends JPanel {
 		lastNameTextField.setColumns(10);
 		
 		tempPassTextField = new JPasswordField();
+		tempPassTextField.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_tempPassTextField = new GridBagConstraints();
 		gbc_tempPassTextField.insets = new Insets(0, 0, 5, 0);
 		gbc_tempPassTextField.fill = GridBagConstraints.HORIZONTAL;
@@ -170,6 +175,7 @@ public class CreateAccountForm extends JPanel {
 	
 	private void createButtonAndListener() {
 		submitButton = new JButton("Create Account");
+		submitButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 		GridBagConstraints gbc_createAccountButton = new GridBagConstraints();
 		gbc_createAccountButton.fill = GridBagConstraints.HORIZONTAL;
 		gbc_createAccountButton.gridx = 1;

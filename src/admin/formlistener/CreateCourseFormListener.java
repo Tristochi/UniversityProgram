@@ -1,30 +1,21 @@
 package admin.formlistener;
 
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.security.PrivateKey;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.chrono.IsoChronology;
-import java.util.jar.Attributes.Name;
-
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.IconifyAction;
-
-import admin.ProfessorData;
 import custom.CustomComboBox;
 import custom.PopupDialog;
 import dbconnect.DBConnect;
@@ -60,27 +51,24 @@ public class CreateCourseFormListener implements ActionListener{
 		this.descriptionTextArea = descriptionTextArea;
 	}
 	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		handleButtonClick();
-	}
 	
 	/*
 	 * Handle Button Click: 
 	 *  - Add account info to DB
 	 */
 	
-	private void handleButtonClick() {
+	@Override
+	public void actionPerformed(ActionEvent e) {
 		if(isFieldEmpty()) {
-			showPopupMessage("One or more fields are empty.");
+			showPopupMessage("One Or More fields Are Empty.", "Error!");
 		}	
 		else {
 			if(!isTimeInputValid(startTimeTextField.getText().toCharArray())) {
-				showPopupMessage("Invalid course start time");
+				showPopupMessage("Invalid Course Start Time", "Error!");
 				return;
 			}
 			if(!isTimeInputValid(endTimeTextField.getText().toCharArray())) {
-				showPopupMessage("Invalid course end time");
+				showPopupMessage("Invalid Eourse End Time", "Error!");
 				return;
 			}
 			
@@ -92,11 +80,10 @@ public class CreateCourseFormListener implements ActionListener{
 			 */
 			else {
 				Boolean queryIsSuccessful = addCourseToDB();
-				showPopupMessage("Course successfully added.");
+				showPopupMessage("Course Successfully Added.", "");
 			}
 		}
 	}
-	
 	
 	private boolean addCourseToDB() {
 		String courseName = courseNameTextField.getText();
@@ -112,8 +99,8 @@ public class CreateCourseFormListener implements ActionListener{
 		
 		try {
 			Connection connection = DBConnect.connection;
-			String query = String.format("INSERT INTO courses VALUES (null, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
-											courseName, semester, startTime, courseDay, description, maxStudents, professorId);
+			String query = String.format("INSERT INTO courses VALUES (null, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+											courseName, semester, startTime, endTime, courseDay, description, maxStudents, professorId);
 			Statement stm = connection.createStatement();
 			int rows = stm.executeUpdate(query);
 			
@@ -242,7 +229,7 @@ public class CreateCourseFormListener implements ActionListener{
 		return true;
 	}
 	
-	private void showPopupMessage(String message) {
+	private void showPopupMessage(String message, String title) {
 		JFrame frame = (JFrame) formPane.getTopLevelAncestor();
 		Point location = new Point();
 		int x = frame.getX() + (frame.getWidth() / 2);
@@ -252,7 +239,7 @@ public class CreateCourseFormListener implements ActionListener{
 		PopupDialog dialog = new PopupDialog(message);
 		dialog.setLocation(location);
 		dialog.pack();
-		dialog.setTitle("Error!");
+		dialog.setTitle(title);
 		dialog.setVisible(true);
 	}
 	

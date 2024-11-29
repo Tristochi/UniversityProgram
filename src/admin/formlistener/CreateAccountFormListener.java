@@ -22,6 +22,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import admin.AccountTypes;
 import custom.PopupDialog;
 import dbconnect.DBConnect;
+import encryption.EncryptionManager;
 
 public class CreateAccountFormListener implements ActionListener{
 	private JPanel formPane;
@@ -43,39 +44,39 @@ public class CreateAccountFormListener implements ActionListener{
 		this.accountTypeComboBox = accountTypeComboBox;
 	}
 	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		handleButtonClick();
-	}
-	
 	/*
 	 * Handle Button Click: 
 	 *  - Add account info to DB
 	 */
 	
-	private void handleButtonClick() {
+	@Override
+	public void actionPerformed(ActionEvent e) {
 		if(isFieldEmpty()) {
-			showPopupMessage("One or more fields are empty.");
+			showPopupMessage("One Or More Fields Are Empty.", "Error!");
 		}
 		else {
 			if(!isUsernameUnique(usernameTextField.getText())) {
-				showPopupMessage("Username is arleady taken.");
+				showPopupMessage("Username Already Exists.", "Error!");
 			}
 			else {
 				boolean queryIsSuccessful = addAccountToDB();
 				if(queryIsSuccessful) {
-					String message = accountTypeComboBox.getSelectedItem() + " account successfully added.";
-					showPopupMessage(message);
+					String message = accountTypeComboBox.getSelectedItem() + " Account Successfully Added.";
+					showPopupMessage(message, "");
 				}
 			}
 		}
+	}
+	
+	private void handleButtonClick() {
+		
 	}
 	
 	private boolean addAccountToDB() {
 		String username = usernameTextField.getText();
 		String  firstName = firstNameTextField.getText();
 		String lastName = lastNameTextField.getText();
-		String tempPass = String.valueOf(tempPassTextField.getPassword());
+		String tempPass = EncryptionManager.encrypt(String.valueOf(tempPassTextField.getPassword()));
 		AccountTypes accountType = AccountTypes.valueOf(accountTypeComboBox.getSelectedItem().toString().toUpperCase());
 		String table;
 		if(accountType.getKey() == 1) {
@@ -87,11 +88,10 @@ public class CreateAccountFormListener implements ActionListener{
 		
 		try {
 			Connection connection = DBConnect.connection;
-			
-			String query = String.format("INSERT INTO accounts VALUES (null, '%s', '%s', '%s', '%s')", username, tempPass, 1, accountType.getKey());
+			String query = String.format("INSERT INTO accounts (username, password, is_password_temporary, account_type_id) VALUES ('%s', '%s', '%s', '%s')", 
+											username, tempPass, 1, accountType.getKey());
             PreparedStatement stm = connection.prepareStatement(query);
             int rows = stm.executeUpdate(query); //returns the number of rows affected
-            //TODO: Encrypt password
             
             // get user_id generated from DB
             query = String.format("SELECT user_id FROM accounts WHERE username = '%s'", username);
@@ -102,7 +102,6 @@ public class CreateAccountFormListener implements ActionListener{
             while(resultSet.next()) {
                 id = resultSet.getInt("user_id");
             }
-            
             
             query = String.format("INSERT INTO %s VALUES (%s, '%s', '%s')", table, id, firstName, lastName);
             PreparedStatement stm2 = connection.prepareStatement(query);
@@ -162,7 +161,7 @@ public class CreateAccountFormListener implements ActionListener{
 		}
 	}
 	
-	private void showPopupMessage(String message) {
+	private void showPopupMessage(String message, String title) {
 		JFrame frame = (JFrame) formPane.getTopLevelAncestor();
 		Point location = new Point();
 		int x = frame.getX() + (frame.getWidth() / 2);
@@ -172,7 +171,7 @@ public class CreateAccountFormListener implements ActionListener{
 		PopupDialog dialog = new PopupDialog(message);
 		dialog.setLocation(location);
 		dialog.pack();
-		dialog.setTitle("Error!");
+		dialog.setTitle(title);
 		dialog.setVisible(true);
 	}
 }
