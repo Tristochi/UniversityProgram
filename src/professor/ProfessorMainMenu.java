@@ -3,6 +3,8 @@ package professor;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
+import java.awt.BorderLayout;
 
 public class ProfessorMainMenu {
 
@@ -36,8 +38,14 @@ public class ProfessorMainMenu {
 	 */
 	public void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 700, 450);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		
+		ProfessorCourseView courseView = new ProfessorCourseView();
+		tabbedPane.addTab("Course Overview", null, courseView, null);
 	}
 
 }
