@@ -13,6 +13,7 @@ import dbconnect.DBConnect;
 
 public class ProfessorCourseView extends JPanel {
 	private String username;
+	private ArrayList<ArrayList<String>> courseDetails;
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -25,14 +26,23 @@ public class ProfessorCourseView extends JPanel {
 	
 	private void initialize() {
 		DBConnect.connect();
-		ArrayList<String> courses = getCourses();
-		String[] courseData = courses.toArray(new String[0]);
-		//ArrayList<String> students = getStudents();
+		courseDetails = getCourses();
+		ArrayList<String>courseNames = new ArrayList<String>();
+		
+		for (ArrayList<String> tmp : courseDetails) {
+			courseNames.add(tmp.get(1));
+		}
+		
+		String[] courseData = courseNames.toArray(new String[0]);
+		ArrayList<String> students = getStudents(courseDetails.get(0).get(0));
+		String[] studentData = students.toArray(new String[0]);
 		//ArrayList<String> pendingStudents = getPendingStudents();
 		
 		JList<String> courseList = new JList<String>(courseData);
+		courseList.setSelectedIndex(0);
+		
 		JLabel courseLabel = new JLabel("Courses");
-		JList<String> studentList = new JList<String>();
+		JList<String> studentList = new JList<String>(studentData);
 		JLabel studentLabel = new JLabel("Students");
 		JList<String> pendingStudentList = new JList<String>();
 		JLabel pendingStudentLabel = new JLabel("Pending Students");
@@ -47,7 +57,7 @@ public class ProfessorCourseView extends JPanel {
 		return username;
 	}
 	
-	private ArrayList<String> getCourses(){
+	private ArrayList<ArrayList<String>> getCourses(){
 		try {
 			Connection connection = DBConnect.connection;
 			
@@ -63,20 +73,62 @@ public class ProfessorCourseView extends JPanel {
 			query = "SELECT * FROM courses WHERE professor_id = " + userID;
 			result = stm.executeQuery(query);
 			
-			ArrayList<String> courses = new ArrayList<>();
+			ArrayList<ArrayList<String>> courses = new ArrayList<ArrayList<String>>();
 			
 			while(result.next()) {
-				courses.add(result.getString("course_name"));
+				ArrayList<String> sublist = new ArrayList<String>();
+				sublist.add(result.getString("course_id"));
+				sublist.add(result.getString("course_name"));
+				sublist.add(result.getString("course_semester"));
+				sublist.add(result.getString("course_day"));
+				sublist.add(result.getString("start_time"));
+				sublist.add(result.getString("end_time"));
+				sublist.add(result.getString("max_students"));
+				courses.add(sublist);
 			}
 			
 			return courses;
 		} catch(Exception e) {
 			System.out.println(e);
-			ArrayList<String> error = new ArrayList<>();
-			error.add(e.getMessage());
+			ArrayList<String> tmp = new ArrayList<>();
+			tmp.add(e.getMessage());
+			ArrayList<ArrayList<String>> error = new ArrayList<ArrayList<String>>();
 			return error;
 		}
 		
+	}
+	
+	private ArrayList<String> getStudents(String courseID){
+		try {
+				Connection connection = DBConnect.connection;
+				//Get all student IDs for the currently selected/provided course ID.
+				String query = "SELECT * FROM students_enrolled_in_courses WHERE course_id = " + courseID;
+				Statement stm = connection.createStatement();
+				ResultSet result = stm.executeQuery(query);
+				
+				ArrayList<String> studentIDs = new ArrayList<>();
+				
+				while(result.next()) {
+					studentIDs.add(result.getString("student_id"));
+				}
+				
+				//Get all of the student names associated with the course.
+				ArrayList<String> studentNames = new ArrayList<String>();
+				
+				for (String ID : studentIDs) {
+					query = "SELECT * FROM students WHERE student_id=" + ID;
+					result = stm.executeQuery(query);
+					result.first();
+					String name = result.getString("first_name") + " " + result.getString("last_name");
+					studentNames.add(name);
+				}
+			
+			return studentNames;
+		}catch (Exception e) {
+			System.out.println(e);
+			throw new RuntimeException(e);
+		}
+
 	}
 	
 	private void createGroupLayout(JList<String> courseList, JList<String> studentList, JList<String> pendingStudentList, JLabel courseLabel, JLabel pendingStudentLabel, JButton approveButton, JButton rejectButton, JLabel studentLabel) {
