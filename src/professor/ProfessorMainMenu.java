@@ -7,7 +7,7 @@ import javax.swing.JTabbedPane;
 import java.awt.BorderLayout;
 
 public class ProfessorMainMenu {
-
+	private String username;
 	public JFrame frame;
 
 	/**
@@ -17,7 +17,7 @@ public class ProfessorMainMenu {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					ProfessorMainMenu window = new ProfessorMainMenu();
+					ProfessorMainMenu window = new ProfessorMainMenu("");
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -29,7 +29,8 @@ public class ProfessorMainMenu {
 	/**
 	 * Create the application.
 	 */
-	public ProfessorMainMenu() {
+	public ProfessorMainMenu(String username) {
+		this.username = username;
 		initialize();
 	}
 
@@ -44,8 +45,12 @@ public class ProfessorMainMenu {
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		
-		ProfessorCourseView courseView = new ProfessorCourseView();
+		ProfessorCourseView courseView = new ProfessorCourseView(this.getCurrentUser());
 		tabbedPane.addTab("Course Overview", null, courseView, null);
+	}
+	
+	public String getCurrentUser() {
+		return this.username;
 	}
 
 }

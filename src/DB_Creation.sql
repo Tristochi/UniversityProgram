@@ -32,13 +32,14 @@ CREATE TABLE Professors(
     PRIMARY KEY(professor_id)
 );
 
+
 CREATE TABLE Semesters(
     semester VARCHAR(255),
     PRIMARY KEY (semester)
 );
 
 INSERT INTO Semesters VALUES ('Fall 2024'), ('Spring 2025'), ('Fall 2025');
-
+SELECT * FROM COURSES;
 CREATE TABLE Courses(
 	course_id INT AUTO_INCREMENT,
     course_name VARCHAR(255),

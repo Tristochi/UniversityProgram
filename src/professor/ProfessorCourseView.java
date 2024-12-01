@@ -4,35 +4,82 @@ import javax.swing.JPanel;
 import javax.swing.JList;
 import javax.swing.JLabel;
 import javax.swing.JButton;
-import java.awt.GridLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import java.util.ArrayList;
+import java.sql.*;
+import dbconnect.DBConnect;
 
 public class ProfessorCourseView extends JPanel {
-
+	private String username;
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Create the panel.
 	 */
-	public ProfessorCourseView() {
+	public ProfessorCourseView(String username) {
+		this.username = username;
+		initialize();
+	}
+	
+	private void initialize() {
+		DBConnect.connect();
+		ArrayList<String> courses = getCourses();
+		String[] courseData = courses.toArray(new String[0]);
+		//ArrayList<String> students = getStudents();
+		//ArrayList<String> pendingStudents = getPendingStudents();
 		
-		JList courseList = new JList();
-		
+		JList<String> courseList = new JList<String>(courseData);
 		JLabel courseLabel = new JLabel("Courses");
-		
-		JList studentList = new JList();
-		
+		JList<String> studentList = new JList<String>();
 		JLabel studentLabel = new JLabel("Students");
-		
-		JList pendingStudentList = new JList();
-		
+		JList<String> pendingStudentList = new JList<String>();
 		JLabel pendingStudentLabel = new JLabel("Pending Students");
-		
 		JButton approveButton = new JButton("Approve");
-		
 		JButton rejectButton = new JButton("Reject");
+
+		createGroupLayout(courseList, studentList, pendingStudentList, courseLabel, pendingStudentLabel, approveButton, rejectButton, studentLabel);
+		
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+	
+	private ArrayList<String> getCourses(){
+		try {
+			Connection connection = DBConnect.connection;
+			
+			//Retriever current UserID given Username
+			String query = "SELECT * FROM accounts WHERE username='" + this.getUsername() + "'";
+			Statement stm = connection.createStatement();
+			ResultSet result = stm.executeQuery(query);
+			result.first();
+			String userID = result.getString("user_id");
+			
+			//Professor ID is the same as the UserID so get courses with the UserID. 
+			
+			query = "SELECT * FROM courses WHERE professor_id = " + userID;
+			result = stm.executeQuery(query);
+			
+			ArrayList<String> courses = new ArrayList<>();
+			
+			while(result.next()) {
+				courses.add(result.getString("course_name"));
+			}
+			
+			return courses;
+		} catch(Exception e) {
+			System.out.println(e);
+			ArrayList<String> error = new ArrayList<>();
+			error.add(e.getMessage());
+			return error;
+		}
+		
+	}
+	
+	private void createGroupLayout(JList<String> courseList, JList<String> studentList, JList<String> pendingStudentList, JLabel courseLabel, JLabel pendingStudentLabel, JButton approveButton, JButton rejectButton, JLabel studentLabel) {
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.TRAILING)
@@ -85,6 +132,5 @@ public class ProfessorCourseView extends JPanel {
 					.addGap(31))
 		);
 		setLayout(groupLayout);
-
 	}
 }

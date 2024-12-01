@@ -1,29 +1,21 @@
 package admin.formlistener;
 
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.security.PrivateKey;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.chrono.IsoChronology;
-import java.util.jar.Attributes.Name;
-
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.IconifyAction;
-
 //import admin.ProfessorData;
 import custom.CustomComboBox;
 import custom.PopupDialog;
@@ -112,8 +104,8 @@ public class CreateCourseFormListener implements ActionListener{
 		
 		try {
 			Connection connection = DBConnect.connection;
-			String query = String.format("INSERT INTO courses VALUES (null, '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
-											courseName, semester, startTime, courseDay, description, maxStudents, professorId);
+			String query = String.format("INSERT INTO courses VALUES (null, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')", 
+											courseName, semester, startTime, endTime, courseDay, description, maxStudents, professorId);
 			Statement stm = connection.createStatement();
 			int rows = stm.executeUpdate(query);
 			

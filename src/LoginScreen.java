@@ -157,7 +157,7 @@ public class LoginScreen {
 	
 	public void goToProfessorMenu() {
 		frame.dispose();
-		ProfessorMainMenu screen = new ProfessorMainMenu();
+		ProfessorMainMenu screen = new ProfessorMainMenu(usernameTextField.getText());
 		screen.initialize();
 		screen.frame.setVisible(true);
 		System.out.println("Display Professor Menu");
