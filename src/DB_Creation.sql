@@ -34,13 +34,14 @@ CREATE TABLE Professors(
     FOREIGN KEY (professor_id) REFERENCES Accounts(user_id);
 );
 
+
 CREATE TABLE Semesters(
     semester VARCHAR(255),
     PRIMARY KEY (semester)
 );
 
 INSERT INTO Semesters VALUES ('Fall 2024'), ('Spring 2025'), ('Fall 2025');
-
+SELECT * FROM COURSES;
 CREATE TABLE Courses(
 	course_id INT AUTO_INCREMENT,
     course_name VARCHAR(255),
@@ -59,13 +60,16 @@ CREATE TABLE Courses(
 CREATE TABLE Course_Requests(
 	course_id INT,
     student_id INT,
-    request_date DATE,
-    request_time TIMESTAMP,
+    request_date VARCHAR(255),
+    request_time VARCHAR(255),
     request_status VARCHAR(255),
     PRIMARY KEY(course_id, student_id),
     FOREIGN KEY(course_id) REFERENCES Courses(course_id),
     FOREIGN KEY(student_id) REFERENCES Students(student_id)
 );
+
+INSERT INTO Course_Requests VALUES(1,2, '12/01/2024','19:56','Pending');
+SELECT * FROM COURSE_REQUESTS;
 
 CREATE TABLE Students_Enrolled_In_Courses(
 	course_id INT,
@@ -75,7 +79,8 @@ CREATE TABLE Students_Enrolled_In_Courses(
     FOREIGN KEY(course_id) REFERENCES Courses(course_id),
     FOREIGN KEY(student_id) REFERENCES Students(student_id)
 );
-
+SELECT * FROM course_requests;
+UPDATE course_requests set request_status='Pending' WHERE student_id=1;
 CREATE TABLE Appointments(
 	appointment_id INT,
     professor_id INT,
@@ -88,3 +93,11 @@ CREATE TABLE Appointments(
     FOREIGN KEY(professor_id) REFERENCES Professors(professor_id),
     FOREIGN KEY(student_id) REFERENCES Students(student_id)
 );
+
+SELECT * FROM ACCOUNTS;
+SELECT * FROM course_requests;
+SELECT * FROM Students_Enrolled_In_Courses;
+INSERT INTO Students_Enrolled_In_Courses VALUES(2, 2, 100);
+SELECT * FROM STUDENTS;
+INSERT INTO Students VALUES (2, 'Katelyn', 'Kishkunas');
+SELECT * FROM COURSES;
