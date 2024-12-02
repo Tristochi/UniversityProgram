@@ -3,19 +3,13 @@ package admin;
 import javax.swing.BorderFactory;
 
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import java.awt.GridBagLayout;
-import java.awt.Image;
-
 import javax.swing.JLabel;
 
-import java.awt.Checkbox;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -32,28 +26,25 @@ import dbconnect.DBConnect;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-
 import GUILook.GUILookAndFeel;
 import admin.formlistener.ModifyAccountFormListener;
+import admin.formlistener.ModifyAccountTableListener;
 import custom.CustomTableModel;
 import custom.RadioButtonEditor;
 import custom.RadioButtonRenderer;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JPasswordField;
 
 public class ModifyAccountForm extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel anchorPane;
+	private JPanel contentPane;
 	private JPanel formPane;
-	private JScrollPane accountViewPane;
 	
-	private final Font labelFont = new Font("Tahoma", Font.PLAIN, 15);
+	private JScrollPane accountViewPane;
 	private JLabel idLabel;
 	private JLabel firstNameLabel;
 	private JTextField idTextField;
@@ -102,11 +93,24 @@ public class ModifyAccountForm extends JPanel {
 		gbc_anchorPane.gridy = 1;
 		add(anchorPane, gbc_anchorPane);
 		GridBagLayout gbl_anchorPane = new GridBagLayout();
-		gbl_anchorPane.columnWidths = new int[] {700};
-		gbl_anchorPane.rowHeights = new int[] {200, 50};
+		gbl_anchorPane.columnWidths = new int[] {0};
+		gbl_anchorPane.rowHeights = new int[] {0};
 		gbl_anchorPane.columnWeights = new double[]{1.0};
-		gbl_anchorPane.rowWeights = new double[]{0.0, 0.0};
+		gbl_anchorPane.rowWeights = new double[]{0};
 		anchorPane.setLayout(gbl_anchorPane);
+		
+		contentPane = new JPanel();
+		GridBagConstraints gbc_contentPane = new GridBagConstraints();
+		gbc_contentPane.fill = GridBagConstraints.BOTH;
+		gbc_contentPane.gridx = 0;
+		gbc_contentPane.gridy = 0;
+		anchorPane.add(contentPane, gbc_contentPane);
+		GridBagLayout gbl_contentPane = new GridBagLayout();
+		gbl_contentPane.columnWidths = new int[] {700};
+		gbl_contentPane.rowHeights = new int[] {200, 50};
+		gbl_contentPane.columnWeights = new double[]{1.0};
+		gbl_contentPane.rowWeights = new double[]{0.0, 0.0};
+		contentPane.setLayout(gbl_contentPane);
 		
 		formPane = new JPanel();
 		formPane.setBorder(new EmptyBorder(0, 75, 0, 75));
@@ -114,7 +118,7 @@ public class ModifyAccountForm extends JPanel {
 		gbc_formPane.fill = GridBagConstraints.BOTH;
 		gbc_formPane.gridx = 0;
 		gbc_formPane.gridy = 1;
-		anchorPane.add(formPane, gbc_formPane);
+		contentPane.add(formPane, gbc_formPane);
 		GridBagLayout gbl_formPane = new GridBagLayout();
 		gbl_formPane.columnWidths = new int[]{50, 150, 50, 150};
 		gbl_formPane.rowHeights = new int[]{50, 50, 50, 50};
@@ -242,16 +246,18 @@ public class ModifyAccountForm extends JPanel {
 		gbc_submitButton.gridy = 2;
 		formPane.add(submitButton, gbc_submitButton);
 		
-		ModifyAccountFormListener listener = new ModifyAccountFormListener(tableModel, this, idTextField, firstNameTextField, 
-																				lastNameTextField, usernameTextField, passwordTextField, submitButton);
+		ModifyAccountFormListener listener = new ModifyAccountFormListener(tableModel, formPane, idTextField, firstNameTextField, 
+																				lastNameTextField, usernameTextField, passwordTextField);
 		submitButton.addActionListener(listener);
 	}
 	
 	public void createAccountInfoScrollPane() {
-		String[] columnNames = {"Select User", "Id", "Username", "First Name", "Last Name", "Account Type"};
+		String[] columnNames = {"Select Account", "Id", "Username", "First Name", "Last Name", "Account Type"};
 		String[][] rowData = getAccountInfoFromDB();
 		
 		tableModel = new CustomTableModel(rowData, columnNames);
+		ModifyAccountTableListener tableListener = new ModifyAccountTableListener(tableModel, idTextField, usernameTextField, firstNameTextField, lastNameTextField);
+		tableModel.addTableModelListener(tableListener);
 		buttonGroup = new ButtonGroup();
 		
 		// add radio buttons in the first column
@@ -268,8 +274,8 @@ public class ModifyAccountForm extends JPanel {
 		accountTable.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		accountTable.setRowHeight(accountTable.getRowHeight() + 8);
 		
-		accountTable.getColumn("Select User").setCellEditor(new RadioButtonEditor(new JCheckBox()));
-		accountTable.getColumn("Select User").setCellRenderer(new RadioButtonRenderer());
+		accountTable.getColumn("Select Account").setCellEditor(new RadioButtonEditor(new JCheckBox()));
+		accountTable.getColumn("Select Account").setCellRenderer(new RadioButtonRenderer());
 		
 		accountViewPane = new JScrollPane(accountTable);
 		GridBagConstraints gbc_accountViewPane = new GridBagConstraints();
@@ -277,24 +283,7 @@ public class ModifyAccountForm extends JPanel {
 		gbc_accountViewPane.fill = GridBagConstraints.BOTH;
 		gbc_accountViewPane.gridx = 0;
 		gbc_accountViewPane.gridy = 0;
-		anchorPane.add(accountViewPane, gbc_accountViewPane);
-	}
-	
-	// update table model after sending account info to DB
-	public void updateTableModel() {
-		String[][] rowData = getAccountInfoFromDB();
-		
-		tableModel.updateData(rowData);
-		
-		// add radio buttons in the first column
-		for(int i = 0; i < tableModel.getRowCount(); i++) {
-			JRadioButton radioButton = new JRadioButton();
-			buttonGroup.add(radioButton);
-			tableModel.setValueAt(radioButton, i, 0);
-		}
-		
-		tableModel.fireTableDataChanged();
-		clearTextFields();
+		contentPane.add(accountViewPane, gbc_accountViewPane);
 	}
 	
 	/**
@@ -360,13 +349,5 @@ public class ModifyAccountForm extends JPanel {
 			throw new RuntimeException(e);
 		}
 		return fullName;
-	}
-	
-	private void clearTextFields() {
-		for(Component component : formPane.getComponents()) {
-			if(component instanceof JTextField textField) {
-				textField.setText("");
-			}
-		}
 	}
 }

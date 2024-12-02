@@ -7,23 +7,12 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.awt.Component;
 import java.awt.Font;
 import javax.swing.JTextField;
 
 import admin.formlistener.CreateAccountFormListener;
-import dbconnect.DBConnect;
-
 import javax.swing.JPasswordField;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JButton;
 
 public class CreateAccountForm extends JPanel {
@@ -43,7 +32,7 @@ public class CreateAccountForm extends JPanel {
 	public CreateAccountForm() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		gridBagLayout.columnWidths = new int[]{678, 0};
+		gridBagLayout.columnWidths = new int[]{700, 0};
 		gridBagLayout.rowHeights = new int[]{17, 250, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};

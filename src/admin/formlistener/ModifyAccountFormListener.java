@@ -1,22 +1,22 @@
 package admin.formlistener;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.JButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-
-import admin.ModifyAccountForm;
+import admin.AccountTypes;
 import custom.CustomTableModel;
 import custom.PopupDialog;
 import dbconnect.DBConnect;
@@ -24,54 +24,24 @@ import encryption.EncryptionManager;
 
 public class ModifyAccountFormListener implements ActionListener {
 	private CustomTableModel tableModel;
-	private ModifyAccountForm mainPane;
+	private JPanel formPane;
 	private JTextField idTextField;
 	private JTextField firstNameTextField;
 	private JTextField lastNameTextField;
 	private JTextField usernameTextField;
 	private JPasswordField passwordTextField;
-	private JButton submitButton;
 	
 
-	public ModifyAccountFormListener(CustomTableModel tableModel, ModifyAccountForm mainPane, JTextField idTextField,
+	public ModifyAccountFormListener(CustomTableModel tableModel, JPanel formPane, JTextField idTextField,
 										JTextField firstNameTextField, JTextField lastNameTextField, JTextField usernameTextField,
-											JPasswordField passwordTextField, JButton submitButton) {
+											JPasswordField passwordTextField) {
 		this.tableModel = tableModel;
-		this.mainPane = mainPane;
+		this.formPane = formPane;
 		this.idTextField = idTextField;
 		this.firstNameTextField = firstNameTextField;
 		this.lastNameTextField = lastNameTextField;
 		this.usernameTextField = usernameTextField;
 		this.passwordTextField = passwordTextField;
-		this.submitButton = submitButton;
-		
-		addTableListener();
-	}
-	
-	// retrieve item from selected row and add them to text fields so they can be edited.
-	public void addTableListener() {
-		tableModel.addTableModelListener(new TableModelListener() {
-			@Override
-			public void tableChanged(TableModelEvent e) {
-				int rowIndex = tableModel.getSelectedRowIndex();
-				if(rowIndex > -1) {
-					String[] rowData = tableModel.getRowDataAtIndex(rowIndex);
-					fillTextFields(rowData);
-				}
-			}
-		});
-	}
-	
-	public void fillTextFields(String[] rowData) {
-		String id = rowData[0];
-		String username = rowData[1];
-		String firstName = rowData[2];
-		String lastName = rowData[3];
-		
-		idTextField.setText(id);
-		usernameTextField.setText(username);
-		firstNameTextField.setText(firstName);
-		lastNameTextField.setText(lastName);
 	}
 
 	@Override
@@ -87,7 +57,7 @@ public class ModifyAccountFormListener implements ActionListener {
 		boolean queryIsSuccessful = updateAccountToDB();
 		if(queryIsSuccessful) {
 			showPopupMessage("Account Successfully Updated.", "");
-			mainPane.updateTableModel();
+			updateTableModel();
 		}
 	}
 
@@ -156,6 +126,86 @@ public class ModifyAccountFormListener implements ActionListener {
 		}
 	}
 	
+	private void updateTableModel() {
+		List<String[]> accountInfo = new ArrayList<>();
+		
+		try {
+			Connection connection = DBConnect.connection;
+			String query = String.format("SELECT user_id, username, account_type_id FROM accounts WHERE account_type_id != 3 ORDER BY user_id");
+			Statement stm = connection.createStatement();
+			ResultSet resultSet = stm.executeQuery(query);
+			
+			while(resultSet.next()) {
+				int id = resultSet.getInt("user_id");
+				String username = resultSet.getString("username");
+				int accountType = resultSet.getInt("account_type_id");
+				
+				// string is "Student" or "Professor" if accountType is 1 or 2 respectively
+				String accountTypeString = AccountTypes.valueOf(accountType).getValue();
+				
+				String fullName[] = getUserFullName(id, accountType);
+				String firstName = fullName[0]; 
+				String lastName = fullName[1];
+				
+				accountInfo.add(new String[]{"", ""+id, username, firstName, lastName, accountTypeString});
+			}
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		tableModel.updateData(accountInfo.toArray(new String[0][0]));
+		ButtonGroup buttonGroup = new ButtonGroup();
+		
+		// add radio buttons in the first column
+		for(int i = 0; i < tableModel.getRowCount(); i++) {
+			JRadioButton radioButton = new JRadioButton();
+			buttonGroup.add(radioButton);
+			tableModel.setValueAt(radioButton, i, 0);
+		}
+		
+		tableModel.fireTableDataChanged();
+		clearTextFields();
+	}
+	
+	private String[] getUserFullName(int id, int accountType) {
+		String table;
+		String idString;
+		String fullName[] = null;
+		if(accountType == 1) {
+			table = "students";
+			idString = "student_id";
+		}
+		else {
+			table = "professors";
+			idString = "professor_id";
+		}
+		
+		try {
+			Connection connection = DBConnect.connection;
+			String query = String.format("SELECT * FROM %s WHERE %s = '%s'", table, idString, id);
+			Statement stm = connection.createStatement();
+			ResultSet resultSet = stm.executeQuery(query);
+			
+			while(resultSet.next()) {
+				fullName = new String[]{resultSet.getString("first_name"), resultSet.getString("last_name")};
+				break;
+			}
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return fullName;
+	}
+	
+	private void clearTextFields() {
+		for(Component component : formPane.getComponents()) {
+			if(component instanceof JTextField textField) {
+				textField.setText("");
+			}
+		}
+	}
+	
 	private boolean isAccountSelected() {
 		if(tableModel.getSelectedRowIndex() == -1) {
 			return false;
@@ -164,7 +214,7 @@ public class ModifyAccountFormListener implements ActionListener {
 	}
 	
 	private void showPopupMessage(String message, String title) {
-		JFrame frame = (JFrame) mainPane.getTopLevelAncestor();
+		JFrame frame = (JFrame) formPane.getTopLevelAncestor();
 		Point location = new Point();
 		int x = frame.getX() + (frame.getWidth() / 2);
 		int y = frame.getY() + (frame.getHeight() / 2);
