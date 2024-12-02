@@ -1,21 +1,11 @@
 package admin;
 
-import java.awt.Dimension;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
-//import com.jgoodies.forms.layout.FormLayout;
-//import com.jgoodies.forms.layout.ColumnSpec;
-//import com.jgoodies.forms.layout.RowSpec;
-
+import GUILook.GUILookAndFeel;
 import dbconnect.DBConnect;
-
-//import com.jgoodies.forms.layout.FormSpecs;
 import javax.swing.JTabbedPane;
-import javax.swing.JPanel;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.FlowLayout;
 import javax.swing.BoxLayout;
 
 public class AdminMainMenu{
@@ -52,7 +42,6 @@ public class AdminMainMenu{
 	public void initialize() {
 		frmAdminView = new JFrame();
 		frmAdminView.setTitle("Admin View");
-		frmAdminView.setBounds(100, 100, 700, 450);
 		frmAdminView.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmAdminView.getContentPane().setLayout(new BoxLayout(frmAdminView.getContentPane(), BoxLayout.X_AXIS));
 		
@@ -64,6 +53,15 @@ public class AdminMainMenu{
 		
 		CreateCourseForm createCourseForm = new CreateCourseForm();
 		jTabbedPane.addTab("Create Course", null, createCourseForm, null);
+		
+		ModifyAccountForm modifyAccountForm = new ModifyAccountForm();
+		jTabbedPane.addTab("Modify Account", null, modifyAccountForm, null);
+		
+		ModifyCourseForm modifyCourseForm = new ModifyCourseForm();
+		jTabbedPane.addTab("Modify Course", null, modifyCourseForm, null);
+		
+		frmAdminView.pack();
+		GUILookAndFeel.setLookAndFeel();
 	}
 
 }

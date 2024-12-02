@@ -1,8 +1,10 @@
 package admin;
 
-import javax.management.RuntimeErrorException;
 import javax.swing.BorderFactory;
+
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 
@@ -15,13 +17,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
-
 import javax.swing.JTextField;
 import javax.swing.text.MaskFormatter;
 
@@ -35,21 +32,17 @@ import javax.swing.JFrame;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
 import java.awt.Component;
-import java.awt.DefaultKeyboardFocusManager;
-
 import javax.swing.Box;
 import javax.swing.JFormattedTextField;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.security.cert.PKIXCertPathChecker;
 import javax.swing.SwingConstants;
 
 public class CreateCourseForm extends JPanel {
 
 	private static final long serialVersionUID = 1L;
+	private final int MAX_CHARACTERS = 254;
 	JLabel titleLabel;
 	private JPanel formPane;
 	private JTextField courseNameTextField;
@@ -62,8 +55,9 @@ public class CreateCourseForm extends JPanel {
 	private JComboBox<String> startTimeComboBox;
 	private JComboBox<String> endTimeComboBox;
 	private JTextArea descriptionTextArea;
-	private final int MAX_CHARACTERS = 255;
 
+	
+	// for testing
 	public static void main(String[] args) {
 		DBConnect.connect();
 
@@ -71,9 +65,9 @@ public class CreateCourseForm extends JPanel {
 		frame.setContentPane(new CreateCourseForm());
 		frame.setPreferredSize(new Dimension(700, 350));
 		frame.pack();
-		GUILookAndFeel.setLookAndFeel();
 		frame.setLocationByPlatform(true);
 		frame.setVisible(true);
+		GUILookAndFeel.setLookAndFeel();
 	}
 
 	/**
@@ -82,19 +76,11 @@ public class CreateCourseForm extends JPanel {
 	public CreateCourseForm() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		gridBagLayout.columnWidths = new int[] { 678, 0 };
+		gridBagLayout.columnWidths = new int[] { 700, 0 };
 		gridBagLayout.rowHeights = new int[] { 17, 250, 0 };
 		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
 		gridBagLayout.rowWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
 		setLayout(gridBagLayout);
-
-		titleLabel = new JLabel("Create A Course");
-		titleLabel.setFont(new Font("Tahoma", Font.BOLD, 14));
-		GridBagConstraints gbc_titleLabel = new GridBagConstraints();
-		gbc_titleLabel.insets = new Insets(0, 0, 5, 0);
-		gbc_titleLabel.gridx = 0;
-		gbc_titleLabel.gridy = 0;
-		add(titleLabel, gbc_titleLabel);
 
 		JPanel anchorPane = new JPanel();
 		GridBagConstraints gbc_anchorPane = new GridBagConstraints();
@@ -107,9 +93,9 @@ public class CreateCourseForm extends JPanel {
 		anchorPane.add(formPane);
 		GridBagLayout gbl_formPane = new GridBagLayout();
 		gbl_formPane.columnWidths = new int[] { 100, 200, 100, 200 };
-		gbl_formPane.rowHeights = new int[] { 52, 52, 52, 52, 52, 0 };
+		gbl_formPane.rowHeights = new int[] { 52, 52, 52, 52, 52 };
 		gbl_formPane.columnWeights = new double[] { 0.1, 1.0, 0.1, 1.0 };
-		gbl_formPane.rowWeights = new double[] { 1.0, 1.0, 1.0, 0.1, 0.1, 0.1 };
+		gbl_formPane.rowWeights = new double[] { 1.0, 1.0, 1.0, 0.1, 0.1 };
 		formPane.setLayout(gbl_formPane);
 
 		createTextFieldsAndComboBoxes();
@@ -117,7 +103,7 @@ public class CreateCourseForm extends JPanel {
 		createStartTimePane();
 		createEndTimePane();
 
-		addDescriptionTextAreaListener();
+		
 		
 		// Add info to combo boxes
 		setSemesterComboBox();
@@ -126,13 +112,155 @@ public class CreateCourseForm extends JPanel {
 		setMaxStudentsComboBox();
 		
 		createButtonAndListener();
+		addDescriptionTextAreaListener();
+	}
+
+	private void createLabels() {
+		titleLabel = new JLabel("Create A Course");
+		titleLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
+		GridBagConstraints gbc_titleLabel = new GridBagConstraints();
+		gbc_titleLabel.insets = new Insets(0, 0, 5, 0);
+		gbc_titleLabel.gridx = 0;
+		gbc_titleLabel.gridy = 0;
+		add(titleLabel, gbc_titleLabel);
+
+		JLabel courseNameLabel = new JLabel("Course Name");
+		courseNameLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
+		GridBagConstraints gbc_courseNameLabel = new GridBagConstraints();
+		gbc_courseNameLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_courseNameLabel.gridx = 0;
+		gbc_courseNameLabel.gridy = 0;
+		formPane.add(courseNameLabel, gbc_courseNameLabel);
+
+		JLabel semesterLabel = new JLabel("Semester");
+		semesterLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
+		GridBagConstraints gbc_semesterLabel = new GridBagConstraints();
+		gbc_semesterLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_semesterLabel.gridx = 0;
+		gbc_semesterLabel.gridy = 1;
+		formPane.add(semesterLabel, gbc_semesterLabel);
+
+		JLabel startTimeLabel = new JLabel("Start Time");
+		startTimeLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
+		GridBagConstraints gbc_startTimeLabel = new GridBagConstraints();
+		gbc_startTimeLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_startTimeLabel.gridx = 2;
+		gbc_startTimeLabel.gridy = 0;
+		formPane.add(startTimeLabel, gbc_startTimeLabel);
+
+		JLabel endTimeLabel = new JLabel("End Time");
+		endTimeLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
+		GridBagConstraints gbc_endTimeLabel = new GridBagConstraints();
+		gbc_endTimeLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_endTimeLabel.gridx = 2;
+		gbc_endTimeLabel.gridy = 1;
+		formPane.add(endTimeLabel, gbc_endTimeLabel);
+
+		JLabel professorLabel = new JLabel("Professor");
+		professorLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
+		GridBagConstraints gbc_professorLabel = new GridBagConstraints();
+		gbc_professorLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_professorLabel.gridx = 0;
+		gbc_professorLabel.gridy = 2;
+		formPane.add(professorLabel, gbc_professorLabel);
+
+		JLabel descriptionLabel = new JLabel("<HTML>Description<br>(optional)</HTML>");
+		descriptionLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
+		GridBagConstraints gbc_descriptionLabel = new GridBagConstraints();
+		gbc_descriptionLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_descriptionLabel.gridx = 2;
+		gbc_descriptionLabel.gridy = 2;
+		formPane.add(descriptionLabel, gbc_descriptionLabel);
+
+		JLabel dayLabel = new JLabel("Day");
+		dayLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
+		GridBagConstraints gbc_dayLabel = new GridBagConstraints();
+		gbc_dayLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_dayLabel.gridx = 0;
+		gbc_dayLabel.gridy = 3;
+		formPane.add(dayLabel, gbc_dayLabel);
+
+		JLabel maxStudentsLabel = new JLabel("<HTML>Max Number<br>of Students</HTML>");
+		maxStudentsLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
+		GridBagConstraints gbc_maxStudentsLabel = new GridBagConstraints();
+		gbc_maxStudentsLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_maxStudentsLabel.gridx = 2;
+		gbc_maxStudentsLabel.gridy = 3;
+		formPane.add(maxStudentsLabel, gbc_maxStudentsLabel);
+	}
+
+	private void createTextFieldsAndComboBoxes() {
+		courseNameTextField = new JTextField();
+		courseNameTextField.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		GridBagConstraints gbc_courseNameTextField = new GridBagConstraints();
+		gbc_courseNameTextField.insets = new Insets(0, 0, 5, 5);
+		gbc_courseNameTextField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_courseNameTextField.gridx = 1;
+		gbc_courseNameTextField.gridy = 0;
+		formPane.add(courseNameTextField, gbc_courseNameTextField);
+		courseNameTextField.setColumns(10);
+
+		//TODO update semester and professor combo boxes without needing to restart the app.
+		
+		semesterComboBox = new JComboBox();
+		semesterComboBox.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		GridBagConstraints gbc_semesterComboBox = new GridBagConstraints();
+		gbc_semesterComboBox.insets = new Insets(0, 0, 5, 5);
+		gbc_semesterComboBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_semesterComboBox.gridx = 1;
+		gbc_semesterComboBox.gridy = 1;
+		formPane.add(semesterComboBox, gbc_semesterComboBox);
+
+		professorComboBox = new CustomComboBox();
+		professorComboBox.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		GridBagConstraints gbc_professorComboBox = new GridBagConstraints();
+		gbc_professorComboBox.insets = new Insets(0, 0, 5, 5);
+		gbc_professorComboBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_professorComboBox.gridx = 1;
+		gbc_professorComboBox.gridy = 2;
+		formPane.add(professorComboBox, gbc_professorComboBox);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+		gbc_scrollPane.fill = GridBagConstraints.BOTH;
+		gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
+		gbc_scrollPane.gridx = 3;
+		gbc_scrollPane.gridy = 2;
+		formPane.add(scrollPane, gbc_scrollPane);
+		
+		descriptionTextArea = new JTextArea();
+		
+		scrollPane.setViewportView(descriptionTextArea);
+		descriptionTextArea.setWrapStyleWord(true);
+		descriptionTextArea.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		descriptionTextArea.setLineWrap(true);
+		descriptionTextArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
+		dayComboBox = new JComboBox();
+		dayComboBox.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		GridBagConstraints gbc_dayComboBox = new GridBagConstraints();
+		gbc_dayComboBox.insets = new Insets(0, 0, 5, 5);
+		gbc_dayComboBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_dayComboBox.gridx = 1;
+		gbc_dayComboBox.gridy = 3;
+		formPane.add(dayComboBox, gbc_dayComboBox);
+
+		maxStudentsComboBox = new JComboBox();
+		maxStudentsComboBox.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		GridBagConstraints gbc_maxStudentsComboBox = new GridBagConstraints();
+		gbc_maxStudentsComboBox.insets = new Insets(0, 0, 5, 0);
+		gbc_maxStudentsComboBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_maxStudentsComboBox.gridx = 3;
+		gbc_maxStudentsComboBox.gridy = 3;
+		formPane.add(maxStudentsComboBox, gbc_maxStudentsComboBox);
 	}
 
 	private void createButtonAndListener() {
 		JButton createCourseButton = new JButton("Create Course");
+		createCourseButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 		GridBagConstraints gbc_createCourseButton = new GridBagConstraints();
 		gbc_createCourseButton.fill = GridBagConstraints.HORIZONTAL;
-		gbc_createCourseButton.insets = new Insets(0, 0, 5, 0);
 		gbc_createCourseButton.gridx = 3;
 		gbc_createCourseButton.gridy = 4;
 		formPane.add(createCourseButton, gbc_createCourseButton);
@@ -142,125 +270,6 @@ public class CreateCourseForm extends JPanel {
 																			dayComboBox, maxStudentsComboBox, startTimeComboBox, 
 																			endTimeComboBox, descriptionTextArea);
 		createCourseButton.addActionListener(listener);
-	}
-
-	private void createTextFieldsAndComboBoxes() {
-		courseNameTextField = new JTextField();
-		GridBagConstraints gbc_courseNameTextField = new GridBagConstraints();
-		gbc_courseNameTextField.insets = new Insets(0, 0, 5, 5);
-		gbc_courseNameTextField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_courseNameTextField.gridx = 1;
-		gbc_courseNameTextField.gridy = 0;
-		formPane.add(courseNameTextField, gbc_courseNameTextField);
-		courseNameTextField.setColumns(10);
-
-		semesterComboBox = new JComboBox();
-		GridBagConstraints gbc_semesterComboBox = new GridBagConstraints();
-		gbc_semesterComboBox.insets = new Insets(0, 0, 5, 5);
-		gbc_semesterComboBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_semesterComboBox.gridx = 1;
-		gbc_semesterComboBox.gridy = 1;
-		formPane.add(semesterComboBox, gbc_semesterComboBox);
-
-		professorComboBox = new CustomComboBox();
-		GridBagConstraints gbc_professorComboBox = new GridBagConstraints();
-		gbc_professorComboBox.insets = new Insets(0, 0, 5, 5);
-		gbc_professorComboBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_professorComboBox.gridx = 1;
-		gbc_professorComboBox.gridy = 2;
-		formPane.add(professorComboBox, gbc_professorComboBox);
-
-		dayComboBox = new JComboBox();
-		GridBagConstraints gbc_dayComboBox = new GridBagConstraints();
-		gbc_dayComboBox.insets = new Insets(0, 0, 5, 5);
-		gbc_dayComboBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_dayComboBox.gridx = 1;
-		gbc_dayComboBox.gridy = 3;
-		formPane.add(dayComboBox, gbc_dayComboBox);
-
-		descriptionTextArea = new JTextArea();
-		descriptionTextArea.setLineWrap(true);
-		GridBagConstraints gbc_descriptionTextArea = new GridBagConstraints();
-		gbc_descriptionTextArea.insets = new Insets(0, 0, 5, 0);
-		gbc_descriptionTextArea.fill = GridBagConstraints.HORIZONTAL;
-		gbc_descriptionTextArea.gridx = 3;
-		gbc_descriptionTextArea.gridy = 2;
-		descriptionTextArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-		formPane.add(descriptionTextArea, gbc_descriptionTextArea);
-
-		maxStudentsComboBox = new JComboBox();
-		GridBagConstraints gbc_maxStudentsComboBox = new GridBagConstraints();
-		gbc_maxStudentsComboBox.insets = new Insets(0, 0, 5, 0);
-		gbc_maxStudentsComboBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_maxStudentsComboBox.gridx = 3;
-		gbc_maxStudentsComboBox.gridy = 3;
-		formPane.add(maxStudentsComboBox, gbc_maxStudentsComboBox);
-	}
-
-	private void createLabels() {
-		JLabel courseNameLabel = new JLabel("Course Name");
-		courseNameLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		GridBagConstraints gbc_courseNameLabel = new GridBagConstraints();
-		gbc_courseNameLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_courseNameLabel.gridx = 0;
-		gbc_courseNameLabel.gridy = 0;
-		formPane.add(courseNameLabel, gbc_courseNameLabel);
-
-		JLabel semesterLabel = new JLabel("Semester");
-		semesterLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		GridBagConstraints gbc_semesterLabel = new GridBagConstraints();
-		gbc_semesterLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_semesterLabel.gridx = 0;
-		gbc_semesterLabel.gridy = 1;
-		formPane.add(semesterLabel, gbc_semesterLabel);
-
-		JLabel startTimeLabel = new JLabel("Start Time");
-		startTimeLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		GridBagConstraints gbc_startTimeLabel = new GridBagConstraints();
-		gbc_startTimeLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_startTimeLabel.gridx = 2;
-		gbc_startTimeLabel.gridy = 0;
-		formPane.add(startTimeLabel, gbc_startTimeLabel);
-
-		JLabel endTimeLabel = new JLabel("End Time");
-		endTimeLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		GridBagConstraints gbc_endTimeLabel = new GridBagConstraints();
-		gbc_endTimeLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_endTimeLabel.gridx = 2;
-		gbc_endTimeLabel.gridy = 1;
-		formPane.add(endTimeLabel, gbc_endTimeLabel);
-
-		JLabel professorLabel = new JLabel("Professor");
-		professorLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		GridBagConstraints gbc_professorLabel = new GridBagConstraints();
-		gbc_professorLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_professorLabel.gridx = 0;
-		gbc_professorLabel.gridy = 2;
-		formPane.add(professorLabel, gbc_professorLabel);
-
-		JLabel descriptionLabel = new JLabel("<HTML>Description<br>(optional)</HTML>");
-		descriptionLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		GridBagConstraints gbc_descriptionLabel = new GridBagConstraints();
-		gbc_descriptionLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_descriptionLabel.gridx = 2;
-		gbc_descriptionLabel.gridy = 2;
-		formPane.add(descriptionLabel, gbc_descriptionLabel);
-
-		JLabel dayLabel = new JLabel("Day");
-		dayLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		GridBagConstraints gbc_dayLabel = new GridBagConstraints();
-		gbc_dayLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_dayLabel.gridx = 0;
-		gbc_dayLabel.gridy = 3;
-		formPane.add(dayLabel, gbc_dayLabel);
-
-		JLabel maxStudentsLabel = new JLabel("<HTML>Max Number<br>of Students</HTML>");
-		maxStudentsLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		GridBagConstraints gbc_maxStudentsLabel = new GridBagConstraints();
-		gbc_maxStudentsLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_maxStudentsLabel.gridx = 2;
-		gbc_maxStudentsLabel.gridy = 3;
-		formPane.add(maxStudentsLabel, gbc_maxStudentsLabel);
 	}
 	
 	private void createStartTimePane() {
@@ -280,7 +289,7 @@ public class CreateCourseForm extends JPanel {
 
 		startTimeTextField = new JFormattedTextField(getTimeFormat());
 		startTimeTextField.setHorizontalAlignment(SwingConstants.CENTER);
-		startTimeTextField.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		startTimeTextField.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_startTimeTextField = new GridBagConstraints();
 		gbc_startTimeTextField.insets = new Insets(0, 0, 0, 5);
 		gbc_startTimeTextField.fill = GridBagConstraints.HORIZONTAL;
@@ -289,7 +298,7 @@ public class CreateCourseForm extends JPanel {
 		startTimePane.add(startTimeTextField, gbc_startTimeTextField);
 
 		startTimeComboBox = new JComboBox();
-		startTimeComboBox.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		startTimeComboBox.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_startTimeComboBox = new GridBagConstraints();
 		gbc_startTimeComboBox.insets = new Insets(0, 0, 0, 5);
 		gbc_startTimeComboBox.fill = GridBagConstraints.HORIZONTAL;
@@ -323,7 +332,7 @@ public class CreateCourseForm extends JPanel {
 
 		endTimeTextField = new JFormattedTextField(getTimeFormat());
 		endTimeTextField.setHorizontalAlignment(SwingConstants.CENTER);
-		endTimeTextField.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		endTimeTextField.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_endTimeTextField = new GridBagConstraints();
 		gbc_endTimeTextField.insets = new Insets(0, 0, 0, 5);
 		gbc_endTimeTextField.fill = GridBagConstraints.HORIZONTAL;
@@ -332,7 +341,7 @@ public class CreateCourseForm extends JPanel {
 		endTimePane.add(endTimeTextField, gbc_endTimeTextField);
 
 		endTimeComboBox = new JComboBox();
-		endTimeComboBox.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		endTimeComboBox.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_endTimeComboBox = new GridBagConstraints();
 		gbc_endTimeComboBox.insets = new Insets(0, 0, 0, 5);
 		gbc_endTimeComboBox.fill = GridBagConstraints.HORIZONTAL;
@@ -418,7 +427,7 @@ public class CreateCourseForm extends JPanel {
 	}
 
 	public void setDaysComboBox() {
-		String[] days = new String[] { "Monday", "Tuesday", "Wenesday", "Thursday", "Friday", "Saturday", "Sunday" };
+		String[] days = {"Monday", "Tuesday", "Wenesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
 		for (String day : days) {
 			dayComboBox.addItem(day);

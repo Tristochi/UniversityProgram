@@ -10,13 +10,16 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-//import admin.ProfessorData;
 import custom.CustomComboBox;
 import custom.PopupDialog;
 import dbconnect.DBConnect;
@@ -52,43 +55,36 @@ public class CreateCourseFormListener implements ActionListener{
 		this.descriptionTextArea = descriptionTextArea;
 	}
 	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		handleButtonClick();
-	}
 	
 	/*
 	 * Handle Button Click: 
 	 *  - Add account info to DB
 	 */
 	
-	private void handleButtonClick() {
+	@Override
+	public void actionPerformed(ActionEvent e) {
 		if(isFieldEmpty()) {
-			showPopupMessage("One or more fields are empty.");
+			showPopupMessage("One Or More fields Are Empty.", "Error!");
 		}	
 		else {
 			if(!isTimeInputValid(startTimeTextField.getText().toCharArray())) {
-				showPopupMessage("Invalid course start time");
+				showPopupMessage("Invalid Course Start Time", "Error!");
 				return;
 			}
 			if(!isTimeInputValid(endTimeTextField.getText().toCharArray())) {
-				showPopupMessage("Invalid course end time");
+				showPopupMessage("Invalid Course End Time", "Error!");
 				return;
 			}
-			
-			// TODO finish methods to check if there's a conflicting course or it already exists.
-			/*
-			 * if(doesCourseExistInTimeSlot()) {
-			 * 
-			 * } if(!isCourseUnique()) { showPopupMessage("Course already exists!"); }
-			 */
+			if(doesCourseAlreadyExist()) {
+				showPopupMessage("Course Already Exists in Time Slot", "Error!");
+				return;
+			}
 			else {
 				Boolean queryIsSuccessful = addCourseToDB();
-				showPopupMessage("Course successfully added.");
+				showPopupMessage("Course Successfully Added.", "");
 			}
 		}
 	}
-	
 	
 	private boolean addCourseToDB() {
 		String courseName = courseNameTextField.getText();
@@ -99,8 +95,6 @@ public class CreateCourseFormListener implements ActionListener{
 		String endTime = endTimeTextField.getText() + " " + endTimeComboBox.getSelectedItem().toString();
 		String description = descriptionTextArea.getText();
 		int maxStudents = Integer.parseInt(maxStudentsComboBox.getSelectedItem().toString());
-		
-		// TODO change start_time and end_time in database (only using start time right now).
 		
 		try {
 			Connection connection = DBConnect.connection;
@@ -123,76 +117,62 @@ public class CreateCourseFormListener implements ActionListener{
 	 * Helper Methods
 	 */
 	
-	private boolean doesCourseExistInTimeSlot() {
-		String semester = semesterComboBox.getSelectedItem().toString();
-		String courseDay = dayComboBox.getSelectedItem().toString();
-		String startTime = startTimeTextField.getText() + " " + startTimeComboBox.getSelectedItem().toString();
-		String endTime = endTimeTextField.getText() + " " + endTimeComboBox.getSelectedItem().toString();
+	private boolean doesCourseAlreadyExist() {
+		String semester = (String) semesterComboBox.getSelectedItem();
+		String startTimeString = startTimeTextField.getText() + " " + startTimeComboBox.getSelectedItem();
+		String endTimeString = endTimeTextField.getText() + " " + endTimeComboBox.getSelectedItem();
+		String day = (String) dayComboBox.getSelectedItem();
+		String professorId = professorComboBox.getSelectedItemId()+"";
 		
-		try {
-			Connection connection = DBConnect.connection;
-			String query = String.format("SELECT * FROM courses");
-			Statement stm = connection.createStatement();
-			ResultSet resultSet = stm.executeQuery(query);
+		LocalTime newStartTime = getLocalTimeObject(startTimeString);
+		LocalTime newEndTime = getLocalTimeObject(endTimeString);
+		
+		// courseList contains the start_time and end_time of each course with the same semester, day, and professor
+		// as the course we are trying to modify.
+		// If there are no courses with the same semester and day, we don't have to check if there's a time conflict.
+		// Otherwise check if the start/end time conflict with other courses.
+		List<String[]> courseList = getCoursesAtTime(semester, day, professorId);
+		
+		for(String[] course : courseList) {
+			LocalTime startTime = getLocalTimeObject(course[0]);
+			LocalTime endTime = getLocalTimeObject(course[1]);
 			
-			while(resultSet.next()) {
-				String semesterFromDB = resultSet.getString("course_semester");
-				String courseDayFromDB = resultSet.getString("course_day");
-				String startTimeFromDB = resultSet.getString("start_time");
-				String endTimeFromDB = resultSet.getString("end_time");	
-				
-				if(semester.equals(semesterFromDB) && courseDay.equals(courseDayFromDB)) {
-					
-				}
+			// If the time slot is before or after the existing course time slot, return false. Otherwise return true since there's a conflict.
+			if(newStartTime.isBefore(startTime) && newEndTime.isBefore(startTime)) {
+				return false;
 			}
-			return false;
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	private boolean isCourseUnique() {
-		String courseName = courseNameTextField.getText().toLowerCase();
-		String professor = professorComboBox.getSelectedItem().toString().toLowerCase();
-		
-		try {
-			Connection connection = DBConnect.connection;
-			String query = String.format("SELECT * FROM courses");
-			Statement stm = connection.createStatement();
-			ResultSet resultSet = stm.executeQuery(query);
-			
-			while(resultSet.next()) {
-				String courseNameFromDB = resultSet.getString("course_name").toLowerCase();
-				String professorFromDB = getProfessorFullName(resultSet.getInt("professor_id")).toLowerCase();
-				
-				if(courseName.equals(courseNameFromDB) && professor.equals(professorFromDB)) {
-					return false;
-				}
+			if(newStartTime.isAfter(endTime) && newEndTime.isAfter(endTime)) {
+				return false;
 			}
 			return true;
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		
+		// Return false if no courses were returned from the Database.
+		return false;
 	}
 	
-	private String getProfessorFullName(int professorID) {
-		try {
-			Connection connection = DBConnect.connection;
-			String query = String.format("SELECT * FROM professors WHERE professor_id = '&s'", professorID);
-			Statement stm = connection.createStatement();
-			ResultSet resultSet = stm.executeQuery(query);
+	// Retrieves all courses with the same semester, day, and professor as the one selected to modify
+		// This is then used to check if there will be a time conflict when modifying the time.
+		private List<String[]> getCoursesAtTime(String semester, String day, String professorId) {
+			List<String[]> courseList = new ArrayList<>();
 			
-			while(resultSet.next()) {
-				return resultSet.getString("first_name") + " " + resultSet.getString("last_name");
+			try {
+				Connection connection = DBConnect.connection;
+				String query = String.format("SELECT start_time, end_time FROM courses WHERE course_semester = '%s' AND course_day = '%s' AND professor_id = '%s'", 
+												semester, day, professorId);
+				Statement stm = connection.createStatement();
+				ResultSet resultSet = stm.executeQuery(query);
+				
+				while(resultSet.next()) {
+					courseList.add(new String[]{resultSet.getString("start_time"), resultSet.getString("end_time")});
+				}
+				stm.close();
+				return courseList;
+			}
+			catch (Exception e) {
+				throw new RuntimeException(e);
 			}
 		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return null;
-	}
 	
 	private boolean isFieldEmpty() {
 		Component[] components = formPane.getComponents();
@@ -234,7 +214,13 @@ public class CreateCourseFormListener implements ActionListener{
 		return true;
 	}
 	
-	private void showPopupMessage(String message) {
+	// Convert string time to a LocalTime object
+	private LocalTime getLocalTimeObject(String stringDate) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
+		return LocalTime.parse(stringDate, formatter);
+	}
+	
+	private void showPopupMessage(String message, String title) {
 		JFrame frame = (JFrame) formPane.getTopLevelAncestor();
 		Point location = new Point();
 		int x = frame.getX() + (frame.getWidth() / 2);
@@ -244,7 +230,7 @@ public class CreateCourseFormListener implements ActionListener{
 		PopupDialog dialog = new PopupDialog(message);
 		dialog.setLocation(location);
 		dialog.pack();
-		dialog.setTitle("Error!");
+		dialog.setTitle(title);
 		dialog.setVisible(true);
 	}
 	

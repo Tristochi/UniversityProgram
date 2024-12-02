@@ -32,6 +32,16 @@ public class CustomComboBox extends JComboBox {
 		return item.getString();
 	}
 	
+	public void setSelectedItem(int id, String string) {
+		for(int i = 0; i < getItemCount(); i++) {
+			Item item = (Item) getItemAt(i);
+			
+			if(id == item.getId() && string.equals(item.getString())) {
+				setSelectedIndex(i);
+			}
+		}
+	}
+	
 	class ItemRenderer extends BasicComboBoxRenderer {
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);

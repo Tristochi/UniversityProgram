@@ -22,14 +22,16 @@ CREATE TABLE Students(
 	student_id INT,
     first_name VARCHAR(255),
     last_name VARCHAR(255),
-    PRIMARY KEY(student_id)
+    PRIMARY KEY(student_id),
+    FOREIGN KEY (student_id) REFERENCES Accounts(user_id);
 );
 
 CREATE TABLE Professors(
 	professor_id INT,
     first_name VARCHAR(255),
     last_name VARCHAR(255),
-    PRIMARY KEY(professor_id)
+    PRIMARY KEY(professor_id),
+    FOREIGN KEY (professor_id) REFERENCES Accounts(user_id);
 );
 
 

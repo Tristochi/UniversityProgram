@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
@@ -55,6 +56,8 @@ public class PopupDialog extends JDialog {
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			
 		okButton = new JButton("Ok");
+		okButton.setBorder(new EmptyBorder(5, 15, 5, 15));
+		okButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		okButton.setActionCommand("Ok");
 		buttonPane.add(okButton);
 		
