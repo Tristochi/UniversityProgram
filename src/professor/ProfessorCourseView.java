@@ -45,6 +45,14 @@ public class ProfessorCourseView extends JPanel {
 	}
 	
 	private void initialize() {
+		semesterLabel = new JLabel("Semester: ");
+		totalStudentsLabel = new JLabel("Students: ");
+		dayLabel = new JLabel("Day: ");
+		
+		courseLabel = new JLabel("Courses");
+		studentLabel = new JLabel("Students");
+		pendingStudentLabel = new JLabel("Pending Students");
+		
 		DBConnect.connect();
 		courseDetails = getCourses();
 		ArrayList<String>courseNames = new ArrayList<String>();
@@ -83,6 +91,9 @@ public class ProfessorCourseView extends JPanel {
 								//Set the new current course
 								currentSelectedCourse = selectedCourse;
 								currentSelectedCourseID = course.get(0);
+								
+								//update labels
+								updateSummaryLabels(currentSelectedCourseID);
 							}
 						}
 					}
@@ -95,14 +106,8 @@ public class ProfessorCourseView extends JPanel {
 		
 		courseList.setSelectedIndex(0);
 		currentSelectedCourse = courseList.getSelectedValue();
-		currentSelectedCourseID = getCourseID(courseList.getSelectedValue())
-;		semesterLabel = new JLabel("Semester: ");
-		totalStudentsLabel = new JLabel("Students: ");
-		dayLabel = new JLabel("Day: ");
-		
-		courseLabel = new JLabel("Courses");
-		studentLabel = new JLabel("Students");
-		pendingStudentLabel = new JLabel("Pending Students");
+		currentSelectedCourseID = getCourseID(courseList.getSelectedValue());		
+
 		
 		approveButton = new JButton("Approve");
 		approveButton.addActionListener(new ActionListener() {
