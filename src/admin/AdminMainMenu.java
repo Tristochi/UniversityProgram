@@ -59,7 +59,10 @@ public class AdminMainMenu{
 		jTabbedPane.addTab("Modify Account", null, modifyAccountForm, null);
 		
 		ModifyCourseForm modifyCourseForm = new ModifyCourseForm();
-		jTabbedPane.addTab("Modify Course", null, modifyCourseForm, null);
+		jTabbedPane.addTab("Modify/Remove Course", null, modifyCourseForm, null);
+		
+		RemoveStudentCourseForm removeStudentCourseForm = new RemoveStudentCourseForm();
+		jTabbedPane.addTab("Remove Student From A Course", null, removeStudentCourseForm, null);
 		
 		frmAdminView.pack();
 		GUILookAndFeel.setLookAndFeel();

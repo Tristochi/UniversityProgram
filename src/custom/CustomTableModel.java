@@ -14,16 +14,23 @@ public class CustomTableModel extends DefaultTableModel {
 		super(rowData, columnNames);
 	}
 	
-	public int getSelectedRowIndex() {
-		for(int i = 0; i < this.getRowCount(); i++) {
-			if(this.getValueAt(i, 0) instanceof JRadioButton button) {
-				if(button.isSelected()) {
-					button.setSelected(true);
-					return i;
-				}
-			}
-		}
-		return -1; // no row was selected
+	
+	
+	
+	@Override
+	public void setValueAt(Object aValue, int row, int column) {
+		fireTableDataChanged(); // update the table to re-render the radio buttons when clicked.
+		super.setValueAt(aValue, row, column);
+	}
+	
+	@Override
+	public boolean isCellEditable(int row, int column) {
+		return column == 0; // can only edit the first table;
+	}
+	
+	@Override
+	public void setDataVector(Object[][] dataVector, Object[] columnIdentifiers) {
+		super.setDataVector(dataVector, columnIdentifiers);
 	}
 	
 	public String[] getRowDataAtIndex(int rowIndex) {
@@ -37,15 +44,16 @@ public class CustomTableModel extends DefaultTableModel {
 		return dataArray;
 	}
 	
-	@Override
-	public void setValueAt(Object aValue, int row, int column) {
-		fireTableDataChanged(); // update the table to re-render the radio buttons when clicked.
-		super.setValueAt(aValue, row, column);
-	}
-	
-	@Override
-	public boolean isCellEditable(int row, int column) {
-		return column == 0; // can only edit the first table;
+	public int getSelectedRowIndex() {
+		for(int i = 0; i < this.getRowCount(); i++) {
+			if(this.getValueAt(i, 0) instanceof JRadioButton button) {
+				if(button.isSelected()) {
+					button.setSelected(true);
+					return i;
+				}
+			}
+		}
+		return -1; // no row was selected
 	}
 	
 	public void updateData(String[][] rowData) {
@@ -64,4 +72,6 @@ public class CustomTableModel extends DefaultTableModel {
 			System.out.println(" ");
 		}
 	}
+
+	
 }
