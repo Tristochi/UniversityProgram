@@ -12,11 +12,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.TableModel;
 import javax.swing.text.MaskFormatter;
 
 import GUILook.GUILookAndFeel;
 import admin.formlistener.ModifyCourseFormListener;
 import admin.formlistener.ModifyCourseTableListener;
+import admin.formlistener.RemoveCourseButtonListener;
 import custom.CustomComboBox;
 import custom.CustomTableModel;
 import custom.RadioButtonEditor;
@@ -24,6 +26,7 @@ import custom.RadioButtonRenderer;
 import dbconnect.DBConnect;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -36,11 +39,19 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.swing.SwingConstants;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JTextArea;
+
+/*
+ * GUI to Modify Or Remove Selected Course.
+ */
 
 public class ModifyCourseForm extends JPanel {
 
@@ -65,6 +76,8 @@ public class ModifyCourseForm extends JPanel {
 	private JComboBox<String> startTimeComboBox;
 	private JTextField endTimeTextField;
 	private JComboBox<String> endTimeComboBox;
+	private JButton removeCourseButton;
+	private Map<String, JComponent> componentMap;
 	
 	// for testing
 	public static void main(String[] args) {
@@ -125,9 +138,9 @@ public class ModifyCourseForm extends JPanel {
 		contentPane.add(formPane, gbc_formPane);
 		GridBagLayout gbl_formPane = new GridBagLayout();
 		gbl_formPane.columnWidths = new int[]{50, 180, 50, 180};
-		gbl_formPane.rowHeights = new int[]{50, 50, 50, 50, 50};
+		gbl_formPane.rowHeights = new int[]{50, 50, 50, 50, 50, 50};
 		gbl_formPane.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0};
-		gbl_formPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0};
+		gbl_formPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 		formPane.setLayout(gbl_formPane);
 		
 		createLabels();
@@ -138,12 +151,35 @@ public class ModifyCourseForm extends JPanel {
 		
 		createStartTimePane();
 		createEndTimePane();
+		
+		createComponentHashMap();
+		
 		createCourseInfoScrollPane();
-		createButtonAndListener();
+		createModifyButtonAndListener();
+		createRemoveButtonAndListener();
+		
+		
+	}
+	
+	private void createComponentHashMap() {
+		componentMap = new HashMap<>();
+		componentMap.put("mainPane", this);
+		componentMap.put("formPane", formPane);
+		componentMap.put("courseIdTextField", courseIdTextField);
+		componentMap.put("courseNameTextField", courseNameTextField);
+		componentMap.put("professorComboBox", professorComboBox);
+		componentMap.put("semesterComboBox", semesterComboBox);
+		componentMap.put("dayComboBox", dayComboBox);
+		componentMap.put("startTimeComboBox", startTimeComboBox);
+		componentMap.put("endTimeComboBox", endTimeComboBox);
+		componentMap.put("startTimeTextField", startTimeTextField);
+		componentMap.put("endTimeTextField", endTimeTextField);
+		componentMap.put("descriptionTextArea", descriptionTextArea);
+		componentMap.put("maxStudentsComboBox", maxStudentsComboBox);
 	}
 	
 	private void createLabels(){
-		JLabel titleLabel = new JLabel("Modify An Account");
+		JLabel titleLabel = new JLabel("Modify/Remove A Course");
 		GridBagConstraints gbc_titleLabel = new GridBagConstraints();
 		titleLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
 		gbc_titleLabel.insets = new Insets(0, 0, 5, 0);
@@ -210,7 +246,7 @@ public class ModifyCourseForm extends JPanel {
 		JLabel dayLabel = new JLabel("Day");
 		dayLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 		GridBagConstraints gbc_dayLabel = new GridBagConstraints();
-		gbc_dayLabel.insets = new Insets(0, 0, 0, 5);
+		gbc_dayLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_dayLabel.gridx = 0;
 		gbc_dayLabel.gridy = 4;
 		formPane.add(dayLabel, gbc_dayLabel);
@@ -287,7 +323,7 @@ public class ModifyCourseForm extends JPanel {
 		dayComboBox = new JComboBox();
 		dayComboBox.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GridBagConstraints gbc_dayComboBox = new GridBagConstraints();
-		gbc_dayComboBox.insets = new Insets(0, 0, 0, 5);
+		gbc_dayComboBox.insets = new Insets(0, 0, 5, 5);
 		gbc_dayComboBox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_dayComboBox.gridx = 1;
 		gbc_dayComboBox.gridy = 4;
@@ -373,19 +409,30 @@ public class ModifyCourseForm extends JPanel {
 		endTimePane.add(endTimeComboBox, gbc_endTimeComboBox);
 	}
 	
-	private void createButtonAndListener() {
+	private void createModifyButtonAndListener() {
 		submitButton = new JButton("Submit Changes");
 		submitButton.setFont(new Font("Tahoma", Font.BOLD, 13));
 		GridBagConstraints gbc_submitButton = new GridBagConstraints();
+		gbc_submitButton.insets = new Insets(0, 0, 5, 0);
 		gbc_submitButton.gridx = 3;
 		gbc_submitButton.gridy = 4;
 		formPane.add(submitButton, gbc_submitButton);
 		
-		ModifyCourseFormListener listener = new ModifyCourseFormListener(formPane, tableModel, courseIdTextField, courseNameTextField, 
-																			professorComboBox, semesterComboBox, dayComboBox, 
-																			startTimeTextField, endTimeTextField, startTimeComboBox, 
-																			endTimeComboBox, descriptionTextArea, maxStudentsComboBox);
+		ModifyCourseFormListener listener = new ModifyCourseFormListener(componentMap, tableModel);
+		
 		submitButton.addActionListener(listener);
+	}
+	
+	private void createRemoveButtonAndListener() {
+		removeCourseButton = new JButton("Remove Course");
+		removeCourseButton.setFont(new Font("Tahoma", Font.BOLD, 13));
+		GridBagConstraints gbc_removeCourseButton = new GridBagConstraints();
+		gbc_removeCourseButton.gridx = 3;
+		gbc_removeCourseButton.gridy = 5;
+		formPane.add(removeCourseButton, gbc_removeCourseButton);
+		
+		RemoveCourseButtonListener listener = new RemoveCourseButtonListener(this, courseIdTextField);
+		removeCourseButton.addActionListener(listener);
 	}
 	
 	private void createCourseInfoScrollPane() {
@@ -393,10 +440,7 @@ public class ModifyCourseForm extends JPanel {
 		String rowData[][] = getCourseInfoFromDB();
 		
 		tableModel = new CustomTableModel(rowData, columnNames);
-		ModifyCourseTableListener tableListener = new ModifyCourseTableListener(tableModel, courseIdTextField, courseNameTextField, 
-																					professorComboBox, semesterComboBox, dayComboBox, 
-																					startTimeTextField, endTimeTextField, startTimeComboBox, 
-																					endTimeComboBox, descriptionTextArea, maxStudentsComboBox);
+		ModifyCourseTableListener tableListener = new ModifyCourseTableListener(componentMap, tableModel);
 		tableModel.addTableModelListener(tableListener);
 		buttonGroup = new ButtonGroup();
 		
@@ -429,27 +473,29 @@ public class ModifyCourseForm extends JPanel {
 	/*
 	 * Action/Key Listeners
 	 */
+	
 	// Sets character limit of text area to 255
-		private void addDescriptionTextAreaListener() {
-			descriptionTextArea.addKeyListener(new KeyAdapter() {
-				@Override
-				public void keyTyped(KeyEvent e) {
-					if(descriptionTextArea.getText().length() > MAX_CHARACTERS+1) {
-						e.consume();
-						String shortenedString = descriptionTextArea.getText().substring(0, MAX_CHARACTERS);
-						descriptionTextArea.setText(shortenedString);
-					}
-					else if(descriptionTextArea.getText().length() > MAX_CHARACTERS) {
-						e.consume();
-					}
+	private void addDescriptionTextAreaListener() {
+		descriptionTextArea.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(descriptionTextArea.getText().length() > MAX_CHARACTERS+1) {
+					e.consume();
+					String shortenedString = descriptionTextArea.getText().substring(0, MAX_CHARACTERS);
+					descriptionTextArea.setText(shortenedString);
 				}
-			});
-		}
+				else if(descriptionTextArea.getText().length() > MAX_CHARACTERS) {
+					e.consume();
+				}
+			}
+		});
+	}
+	
 	
 	/*
 	 * Helper Methods
-	 */
-	
+	 */	
+		
 	private String[][] getCourseInfoFromDB() {
 		List<String[]> courseInfo = new ArrayList<>();
 		
@@ -491,5 +537,50 @@ public class ModifyCourseForm extends JPanel {
 		}
 
 		return format;
+	}
+	
+	
+	/*
+	 * Public methods
+	 */
+	
+	// Update the table on the admin view
+	public void updateTableModel() {
+		String[] columnNames = {"Select Course", "Course ID", "Course Name", "Semester", "Start Time", "End Time", "Day", "Description", "Max Students", "Professor"};
+		String[][] courseInfo = getCourseInfoFromDB();
+		
+		tableModel.setDataVector(courseInfo, columnNames);
+		ButtonGroup buttonGroup = new ButtonGroup();
+		
+		for(int i = 0; i < tableModel.getRowCount(); i++) {
+			JRadioButton radioButton = new JRadioButton();
+			buttonGroup.add(radioButton);
+			tableModel.setValueAt(radioButton, i, 0);
+		}
+		
+		courseTable.getColumn("Select Course").setCellEditor(new RadioButtonEditor(new JCheckBox()));
+		courseTable.getColumn("Select Course").setCellRenderer(new RadioButtonRenderer());
+		
+		tableModel.fireTableDataChanged();
+		clearTextFields();
+	}
+	
+	public void clearTextFields() {
+		for(Component component : formPane.getComponents()) {
+			if(component instanceof JTextField textField) {
+				textField.setText("");
+			}
+			if(component instanceof JComboBox comboBox) {
+				comboBox.removeAllItems();
+			}
+		}
+		
+		// startTime/endTime text fields and combo boxes are in another JPanel
+		// so they have to be removed manually
+		descriptionTextArea.setText("");
+		startTimeTextField.setText("");
+		endTimeTextField.setText("");
+		startTimeComboBox.removeAllItems();
+		endTimeComboBox.removeAllItems();
 	}
 }

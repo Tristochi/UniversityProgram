@@ -5,7 +5,10 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.TableModelEvent;
@@ -29,22 +32,19 @@ public class ModifyCourseTableListener implements TableModelListener {
 	private JTextArea descriptionTextArea;
 	private JComboBox<Integer> maxStudentsComboBox;
 	
-	public ModifyCourseTableListener(CustomTableModel tableModel, JTextField courseIdTextField, JTextField courseNameTextField,
-										CustomComboBox professorComboBox, JComboBox<String> semesterComboBox, JComboBox<String> dayComboBox,
-										JTextField startTimeTextField, JTextField endTimeTextField, JComboBox<String> startTimeComboBox,
-										JComboBox<String> endTimeComboBox, JTextArea descriptionTextArea, JComboBox<Integer> maxStudentsComboBox) {
+	public ModifyCourseTableListener(Map<String, JComponent> componentMap, CustomTableModel tableModel) {
 		this.tableModel = tableModel;
-		this.courseIdTextField = courseIdTextField;
-		this.courseNameTextField = courseNameTextField;
-		this.professorComboBox = professorComboBox;
-		this.semesterComboBox = semesterComboBox;
-		this.dayComboBox = dayComboBox;
-		this.startTimeTextField = startTimeTextField;
-		this.endTimeTextField = endTimeTextField;
-		this.startTimeComboBox = startTimeComboBox;
-		this.endTimeComboBox = endTimeComboBox;
-		this.descriptionTextArea = descriptionTextArea;
-		this.maxStudentsComboBox = maxStudentsComboBox;
+		this.courseIdTextField = (JTextField) componentMap.get("courseIdTextField");
+		this.courseNameTextField = (JTextField) componentMap.get("courseNameTextField");
+		this.professorComboBox = (CustomComboBox) componentMap.get("professorComboBox");
+		this.semesterComboBox = (JComboBox<String>) componentMap.get("semesterComboBox");
+		this.dayComboBox = (JComboBox<String>) componentMap.get("dayComboBox");
+		this.startTimeTextField = (JTextField) componentMap.get("startTimeTextField");
+		this.endTimeTextField = (JTextField) componentMap.get("endTimeTextField");
+		this.startTimeComboBox = (JComboBox<String>) componentMap.get("startTimeComboBox");
+		this.endTimeComboBox = (JComboBox<String>) componentMap.get("endTimeComboBox");
+		this.descriptionTextArea = (JTextArea) componentMap.get("descriptionTextArea");
+		this.maxStudentsComboBox = (JComboBox<Integer>) componentMap.get("maxStudentsComboBox");
 	}
 	
 	@Override

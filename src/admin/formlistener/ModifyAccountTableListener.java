@@ -1,5 +1,8 @@
 package admin.formlistener;
 
+import java.util.Map;
+
+import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -13,13 +16,12 @@ public class ModifyAccountTableListener implements TableModelListener {
 	private JTextField firstNameTextField;
 	private JTextField lastNameTextField;
 
-	public ModifyAccountTableListener(CustomTableModel tableModel, JTextField idTextField, JTextField usernameTextField,
-										JTextField firstNameTextField, JTextField lastNameTextField) {
+	public ModifyAccountTableListener(Map<String, JComponent> componentMap, CustomTableModel tableModel) {
 		this.tableModel = tableModel;
-		this.idTextField = idTextField;
-		this.usernameTextField = usernameTextField;
-		this.firstNameTextField = firstNameTextField;
-		this.lastNameTextField = lastNameTextField;
+		this.idTextField = (JTextField) componentMap.get("idTextField");
+		this.usernameTextField = (JTextField) componentMap.get("usernameTextField");
+		this.firstNameTextField = (JTextField) componentMap.get("firstNameTextField");
+		this.lastNameTextField = (JTextField) componentMap.get("lastNameTextField");
 	}
 
 	@Override

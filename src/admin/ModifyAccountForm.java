@@ -10,6 +10,7 @@ import javax.swing.JRadioButton;
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -18,7 +19,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JTable;
 
@@ -35,6 +38,7 @@ import custom.RadioButtonRenderer;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JPasswordField;
 
 public class ModifyAccountForm extends JPanel {
@@ -59,6 +63,7 @@ public class ModifyAccountForm extends JPanel {
 	CustomTableModel tableModel;
 	ButtonGroup buttonGroup;
 	private JPasswordField passwordTextField;
+	Map<String, JComponent> componentMap;
 	
 	
 	// for testing
@@ -128,8 +133,22 @@ public class ModifyAccountForm extends JPanel {
 		
 		createLabels();
 		createTextFields();
+		
+		createComponentHashMap();
+		
 		createAccountInfoScrollPane();
 		createButtonAndListener();
+	}
+	
+	private void createComponentHashMap() {
+		componentMap = new HashMap();
+		componentMap.put("mainPane", this);
+		componentMap.put("formPane", formPane);
+		componentMap.put("idTextField", idTextField);
+		componentMap.put("firstNameTextField", firstNameTextField);
+		componentMap.put("lastNameTextField", lastNameTextField);
+		componentMap.put("usernameTextField", usernameTextField);
+		componentMap.put("passwordTextField", passwordTextField);
 	}
 	
 	private void createLabels(){
@@ -246,8 +265,7 @@ public class ModifyAccountForm extends JPanel {
 		gbc_submitButton.gridy = 2;
 		formPane.add(submitButton, gbc_submitButton);
 		
-		ModifyAccountFormListener listener = new ModifyAccountFormListener(tableModel, formPane, idTextField, firstNameTextField, 
-																				lastNameTextField, usernameTextField, passwordTextField);
+		ModifyAccountFormListener listener = new ModifyAccountFormListener(componentMap, tableModel);
 		submitButton.addActionListener(listener);
 	}
 	
@@ -256,7 +274,7 @@ public class ModifyAccountForm extends JPanel {
 		String[][] rowData = getAccountInfoFromDB();
 		
 		tableModel = new CustomTableModel(rowData, columnNames);
-		ModifyAccountTableListener tableListener = new ModifyAccountTableListener(tableModel, idTextField, usernameTextField, firstNameTextField, lastNameTextField);
+		ModifyAccountTableListener tableListener = new ModifyAccountTableListener(componentMap, tableModel);
 		tableModel.addTableModelListener(tableListener);
 		buttonGroup = new ButtonGroup();
 		
@@ -349,5 +367,38 @@ public class ModifyAccountForm extends JPanel {
 			throw new RuntimeException(e);
 		}
 		return fullName;
+	}
+	
+	/*
+	 * Public Methods
+	 */
+	
+	public void updateTableModel() {
+		String[] columnNames = {"Select Account", "Id", "Username", "First Name", "Last Name", "Account Type"};
+		String[][] rowData = getAccountInfoFromDB();
+		
+		tableModel.setDataVector(rowData, columnNames);
+		ButtonGroup buttonGroup = new ButtonGroup();
+		
+		// add radio buttons in the first column
+		for(int i = 0; i < tableModel.getRowCount(); i++) {
+			JRadioButton radioButton = new JRadioButton();
+			buttonGroup.add(radioButton);
+			tableModel.setValueAt(radioButton, i, 0);
+		}
+		
+		accountTable.getColumn("Select Account").setCellEditor(new RadioButtonEditor(new JCheckBox()));
+		accountTable.getColumn("Select Account").setCellRenderer(new RadioButtonRenderer());
+		
+		tableModel.fireTableDataChanged();
+		clearTextFields();
+	}
+	
+	public void clearTextFields() {
+		for(Component component : formPane.getComponents()) {
+			if(component instanceof JTextField textField) {
+				textField.setText("");
+			}
+		}
 	}
 }

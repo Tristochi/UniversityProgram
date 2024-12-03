@@ -9,20 +9,24 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import admin.AccountTypes;
+import admin.ModifyAccountForm;
 import custom.CustomTableModel;
 import custom.PopupDialog;
 import dbconnect.DBConnect;
 import encryption.EncryptionManager;
 
 public class ModifyAccountFormListener implements ActionListener {
+	private ModifyAccountForm mainPane;
 	private CustomTableModel tableModel;
 	private JPanel formPane;
 	private JTextField idTextField;
@@ -32,16 +36,15 @@ public class ModifyAccountFormListener implements ActionListener {
 	private JPasswordField passwordTextField;
 	
 
-	public ModifyAccountFormListener(CustomTableModel tableModel, JPanel formPane, JTextField idTextField,
-										JTextField firstNameTextField, JTextField lastNameTextField, JTextField usernameTextField,
-											JPasswordField passwordTextField) {
+	public ModifyAccountFormListener(Map<String, JComponent> componentMap, CustomTableModel tableModel) {
+		this.mainPane = (ModifyAccountForm) componentMap.get("mainPane");
 		this.tableModel = tableModel;
-		this.formPane = formPane;
-		this.idTextField = idTextField;
-		this.firstNameTextField = firstNameTextField;
-		this.lastNameTextField = lastNameTextField;
-		this.usernameTextField = usernameTextField;
-		this.passwordTextField = passwordTextField;
+		this.formPane = (JPanel) componentMap.get("formPane");
+		this.idTextField = (JTextField) componentMap.get("idTextField");
+		this.firstNameTextField = (JTextField) componentMap.get("firstNameTextField");
+		this.lastNameTextField = (JTextField) componentMap.get("lastNameTextField");
+		this.usernameTextField = (JTextField) componentMap.get("usernameTextField");
+		this.passwordTextField = (JPasswordField) componentMap.get("passwordTextField");
 	}
 
 	@Override
@@ -57,7 +60,7 @@ public class ModifyAccountFormListener implements ActionListener {
 		boolean queryIsSuccessful = updateAccountToDB();
 		if(queryIsSuccessful) {
 			showPopupMessage("Account Successfully Updated.", "");
-			updateTableModel();
+			mainPane.updateTableModel();
 		}
 	}
 
@@ -124,87 +127,7 @@ public class ModifyAccountFormListener implements ActionListener {
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-	
-	private void updateTableModel() {
-		List<String[]> accountInfo = new ArrayList<>();
-		
-		try {
-			Connection connection = DBConnect.connection;
-			String query = String.format("SELECT user_id, username, account_type_id FROM accounts WHERE account_type_id != 3 ORDER BY user_id");
-			Statement stm = connection.createStatement();
-			ResultSet resultSet = stm.executeQuery(query);
-			
-			while(resultSet.next()) {
-				int id = resultSet.getInt("user_id");
-				String username = resultSet.getString("username");
-				int accountType = resultSet.getInt("account_type_id");
-				
-				// string is "Student" or "Professor" if accountType is 1 or 2 respectively
-				String accountTypeString = AccountTypes.valueOf(accountType).getValue();
-				
-				String fullName[] = getUserFullName(id, accountType);
-				String firstName = fullName[0]; 
-				String lastName = fullName[1];
-				
-				accountInfo.add(new String[]{"", ""+id, username, firstName, lastName, accountTypeString});
-			}
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		
-		tableModel.updateData(accountInfo.toArray(new String[0][0]));
-		ButtonGroup buttonGroup = new ButtonGroup();
-		
-		// add radio buttons in the first column
-		for(int i = 0; i < tableModel.getRowCount(); i++) {
-			JRadioButton radioButton = new JRadioButton();
-			buttonGroup.add(radioButton);
-			tableModel.setValueAt(radioButton, i, 0);
-		}
-		
-		tableModel.fireTableDataChanged();
-		clearTextFields();
-	}
-	
-	private String[] getUserFullName(int id, int accountType) {
-		String table;
-		String idString;
-		String fullName[] = null;
-		if(accountType == 1) {
-			table = "students";
-			idString = "student_id";
-		}
-		else {
-			table = "professors";
-			idString = "professor_id";
-		}
-		
-		try {
-			Connection connection = DBConnect.connection;
-			String query = String.format("SELECT * FROM %s WHERE %s = '%s'", table, idString, id);
-			Statement stm = connection.createStatement();
-			ResultSet resultSet = stm.executeQuery(query);
-			
-			while(resultSet.next()) {
-				fullName = new String[]{resultSet.getString("first_name"), resultSet.getString("last_name")};
-				break;
-			}
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return fullName;
-	}
-	
-	private void clearTextFields() {
-		for(Component component : formPane.getComponents()) {
-			if(component instanceof JTextField textField) {
-				textField.setText("");
-			}
-		}
-	}
+	}	
 	
 	private boolean isAccountSelected() {
 		if(tableModel.getSelectedRowIndex() == -1) {

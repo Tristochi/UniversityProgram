@@ -14,20 +14,25 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import admin.ModifyCourseForm;
 import custom.CustomComboBox;
 import custom.CustomTableModel;
 import custom.PopupDialog;
 import dbconnect.DBConnect;
 
 public class ModifyCourseFormListener implements ActionListener{
+	private ModifyCourseForm mainPane;
 	private JPanel formPane;
 	private CustomTableModel tableModel;
 	private JTextField courseIdTextField;
@@ -44,24 +49,21 @@ public class ModifyCourseFormListener implements ActionListener{
 	
 	
 	
-	public ModifyCourseFormListener(JPanel formPane, CustomTableModel tableModel, JTextField courseIdTextField, JTextField courseNameTextField, CustomComboBox professorComboBox, 
-										JComboBox<String> semesterComboBox, JComboBox<String> dayComboBox, JTextField startTimeTextField, JTextField endTimeTextField, 
-										JComboBox<String> startTimeComboBox, JComboBox<String> endTimeComboBox, JTextArea descriptionTextArea, JComboBox<Integer> maxStudentsComboBox) {
-		this.formPane = formPane;
+	public ModifyCourseFormListener(Map<String, JComponent> componentMap, CustomTableModel tableModel) {
+		this.mainPane = (ModifyCourseForm) componentMap.get("mainPane");
+		this.formPane = (JPanel) componentMap.get("formPane");
 		this.tableModel = tableModel;
-		this.courseIdTextField = courseIdTextField;
-		this.courseNameTextField = courseNameTextField;
-		this.professorComboBox = professorComboBox;
-		this.semesterComboBox = semesterComboBox;
-		this.dayComboBox = dayComboBox;
-		this.startTimeTextField = startTimeTextField;
-		this.endTimeTextField = endTimeTextField;
-		this.startTimeComboBox = startTimeComboBox;
-		this.endTimeComboBox = endTimeComboBox;
-		this.descriptionTextArea = descriptionTextArea;
-		this.maxStudentsComboBox = maxStudentsComboBox;
-		
-		
+		this.courseIdTextField = (JTextField) componentMap.get("courseIdTextField");
+		this.courseNameTextField = (JTextField) componentMap.get("courseNameTextField");
+		this.professorComboBox = (CustomComboBox) componentMap.get("professorComboBox");
+		this.semesterComboBox = (JComboBox<String>) componentMap.get("semesterComboBox");
+		this.dayComboBox = (JComboBox<String>) componentMap.get("dayComboBox");
+		this.startTimeTextField = (JTextField) componentMap.get("startTimeTextField");
+		this.endTimeTextField = (JTextField) componentMap.get("endTimeTextField");
+		this.startTimeComboBox = (JComboBox<String>) componentMap.get("startTimeComboBox");
+		this.endTimeComboBox = (JComboBox<String>) componentMap.get("endTimeComboBox");
+		this.descriptionTextArea = (JTextArea) componentMap.get("descriptionTextArea");
+		this.maxStudentsComboBox = (JComboBox<Integer>) componentMap.get("maxStudentsComboBox");
 	}
 
 	@Override
@@ -93,7 +95,7 @@ public class ModifyCourseFormListener implements ActionListener{
 		boolean queryIsSuccessful = updateCourseToDB();
 		if(queryIsSuccessful) {
 			showPopupMessage("Course Successfuly Updated", "");
-			updateTableModel();
+			mainPane.updateTableModel();
 		}
 	}
 	
@@ -256,66 +258,7 @@ public class ModifyCourseFormListener implements ActionListener{
 		}
 	}
 	
-	// Update the table on the admin view
-	private void updateTableModel() {
-		List<String[]> courseInfo = new ArrayList<>();
-		
-		try {
-			Connection connection = DBConnect.connection;
-			String query = String.format("SELECT *, professors.first_name, professors.last_name FROM courses, professors "
-											+ "WHERE professors.professor_id = courses.professor_id ORDER BY course_id");
-			Statement stm = connection.createStatement();
-			ResultSet resultSet = stm.executeQuery(query);
-			
-			while(resultSet.next()) {
-				String id = ""+resultSet.getInt("course_id");
-				String courseName = resultSet.getString("course_name");
-				String semester = resultSet.getString("course_semester");
-				String startTime = resultSet.getString("start_time");
-				String endTime = resultSet.getString("end_time");
-				String day = resultSet.getString("course_day");
-				String description = resultSet.getString("course_description");
-				String maxStudents = ""+resultSet.getInt("max_students");
-				String professorName = resultSet.getString("first_name") + " " + resultSet.getString("last_name");
-				
-				courseInfo.add(new String[]{"", id, courseName, semester, startTime, endTime, day, description, maxStudents, professorName});
-			}
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		
-		tableModel.updateData(courseInfo.toArray(new String[0][0]));
-		ButtonGroup buttonGroup = new ButtonGroup();
-		
-		for(int i = 0; i < tableModel.getRowCount(); i++) {
-			JRadioButton radioButton = new JRadioButton();
-			buttonGroup.add(radioButton);
-			tableModel.setValueAt(radioButton, i, 0);
-		}
-		
-		tableModel.fireTableDataChanged();
-		clearTextFields();
-	}
 	
-	private void clearTextFields() {
-		for(Component component : formPane.getComponents()) {
-			if(component instanceof JTextField textField) {
-				textField.setText("");
-			}
-			if(component instanceof JComboBox comboBox) {
-				comboBox.removeAllItems();
-			}
-		}
-		
-		// startTime/endTime text fields and combo boxes are in another JPanel
-		// so they have to be removed manually
-		descriptionTextArea.setText("");
-		startTimeTextField.setText("");
-		endTimeTextField.setText("");
-		startTimeComboBox.removeAllItems();
-		endTimeComboBox.removeAllItems();
-	}
 	
 	// Convert string time to a LocalTime object
 	private LocalTime getLocalTimeObject(String stringDate) {
