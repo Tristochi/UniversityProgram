@@ -5,13 +5,12 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import GUILook.GUILookAndFeel;
 import dbconnect.DBConnect;
-
 import javax.swing.JTabbedPane;
 import javax.swing.BoxLayout;
 
 public class AdminMainMenu{
 
-	private JFrame frmAdminView;
+	public JFrame frmAdminView;
 
 	/**
 	 * Launch the application.
@@ -40,7 +39,7 @@ public class AdminMainMenu{
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	public void initialize() {
 		frmAdminView = new JFrame();
 		frmAdminView.setTitle("Admin View");
 		frmAdminView.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
