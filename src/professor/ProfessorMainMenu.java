@@ -47,6 +47,9 @@ public class ProfessorMainMenu {
 		
 		ProfessorCourseView courseView = new ProfessorCourseView(this.getCurrentUser());
 		tabbedPane.addTab("Course Overview", null, courseView, null);
+		
+		ProfessorCourseGrades gradeView = new ProfessorCourseGrades(this.getCurrentUser());
+		tabbedPane.addTab("Grades", null, gradeView, null);
 	}
 	
 	public String getCurrentUser() {
