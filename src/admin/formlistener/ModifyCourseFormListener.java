@@ -81,11 +81,11 @@ public class ModifyCourseFormListener implements ActionListener{
 			return;
 		}
 		if(!isTimeInputValid(startTimeTextField.getText().toCharArray())) {
-			showPopupMessage("Invalid Course Start Time", "Error!");
+			showPopupMessage("Invalid Course Start Time.", "Error!");
 			return;
 		}
 		if(!isTimeInputValid(endTimeTextField.getText().toCharArray())) {
-			showPopupMessage("Invalid Course End Time", "Error!");
+			showPopupMessage("Invalid Course End Time.", "Error!");
 			return;
 		}
 		if(doesCourseAlreadyExist()) {
@@ -94,7 +94,7 @@ public class ModifyCourseFormListener implements ActionListener{
 		}
 		boolean queryIsSuccessful = updateCourseToDB();
 		if(queryIsSuccessful) {
-			showPopupMessage("Course Successfuly Updated", "");
+			showPopupMessage("Course Successfuly Updated.", "");
 			mainPane.updateTableModel();
 		}
 	}

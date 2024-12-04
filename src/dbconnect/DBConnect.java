@@ -11,7 +11,7 @@ public class DBConnect {
             //Class.forName("com.mysql.jdbc.Driver");
             String url = "jdbc:mysql://localhost:3306/university_db";
             String user = "root";
-            String pass = "Ecu@dor95";
+            String pass = "root";
             connection = DriverManager.getConnection(url, user, pass);
         } catch (Exception e) {
             throw new RuntimeException(e);
