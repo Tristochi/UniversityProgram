@@ -77,7 +77,7 @@ public class MakeAppointment {
 
         // Insert the appointment
         String insertQuery = """
-            INSERT INTO Appointments (appointment_id, professor_id, student_id, appointment_date, appointment_time, appointment_notes, appointment_status)
+            INSERT INTO Appointments (appointment_id, admin_id, student_id, appointment_date, appointment_time, appointment_notes, appointment_status)
             VALUES (NULL, NULL, ?, ?, ?, '', 'Confirmed');
         """;
 
