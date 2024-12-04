@@ -1,8 +1,9 @@
+package student;
 import java.sql.*;
 public class ViewFinalGradeAndGPA {
 	private static final String DB_URL = "jdbc:mysql://localhost:3306/university_db";
     private static final String DB_USERNAME = "root";
-    private static final String DB_PASSWORD = "password";
+    private static final String DB_PASSWORD = "Ecu@dor95";
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

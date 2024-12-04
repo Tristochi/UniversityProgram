@@ -6,6 +6,8 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import custom.CustomTableModel;
 import dbconnect.DBConnect;
@@ -14,6 +16,11 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -30,7 +37,10 @@ public class ProfessorCourseGrades extends JPanel {
 	private JScrollPane scrollPane;
 	private JLabel gradeLabel;
 	private String currentCourseID;
+	private String currentSelectedCourse;
 	private ArrayList<ArrayList<String>> courseList;
+	private CustomTableModel tableModel;
+	private String selectedGrade;
 	
 	
 	/**
@@ -50,6 +60,28 @@ public class ProfessorCourseGrades extends JPanel {
 		}
 		
 		courseBox = new JComboBox(courseData.toArray(new String[0]));
+		courseBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    //Update current course/courseID
+                	for(ArrayList<String> course : courseList) {
+                		if(course.get(1).equals(e.getItem())) {
+                			currentCourseID = course.get(0);
+                			currentSelectedCourse = (String) e.getItem();
+                			
+                			//Get new table data
+                			String [][] rowData = getStudentGrades(currentCourseID);
+                			tableModel.setRowCount(0);
+                			for(String[] row : rowData) {
+                				tableModel.addRow(row);
+                			}
+                		}
+                	}
+                }
+            }
+		});
+		
+		currentSelectedCourse = (String) courseBox.getSelectedItem();
 		courseLabel = new JLabel("Course Select");
 		textField = new JTextField();
 		textField.setColumns(10);
@@ -59,14 +91,76 @@ public class ProfessorCourseGrades extends JPanel {
 		currentCourseID = "1";
 		createGroupLayout(scrollPane, courseBox, courseLabel, gradeLabel, submitBtn, groupLayout);
 		
-		String[] columnNames = {"Course ID", "Student Name", "Course Grade"};
+		String[] columnNames = {"Student ID", "Student Name", "Course Grade"};
 		String[][] rowData = getStudentGrades(currentCourseID);
-		CustomTableModel tableModel = new CustomTableModel(rowData, columnNames);
+		
+		tableModel = new CustomTableModel(rowData, columnNames);
 		gradeTable = new JTable(tableModel);
+		gradeTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = gradeTable.getSelectedRow();
+                    if (selectedRow != -1) {
+                        selectedGrade = (String) gradeTable.getValueAt(selectedRow, 2);
+                        System.out.println("Grade: " + selectedGrade);
+                        textField.setText(selectedGrade);   
+                    }
+                }
+			}
+		});
+		
 		scrollPane.setViewportView(gradeTable);
 		setLayout(groupLayout);
+		
+		submitBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//Check if entered grade is different than final grade
+				int selectedRow = gradeTable.getSelectedRow();
+				if(selectedRow != -1) {
+					selectedGrade = (String) gradeTable.getValueAt(selectedRow, 2);
+					String selectedStudentID = (String) gradeTable.getValueAt(selectedRow, 0);
+					String enteredGrade = textField.getText();
+					
+					if (!enteredGrade.equals(selectedGrade)) {
+						//Update the database
+						boolean result = updateFinalGrade(selectedStudentID, currentCourseID, enteredGrade);
+						
+						if(result) {
+							//update the view and text field
+                			//update the table
+                			String [][] rowData = getStudentGrades(currentCourseID);
+                			tableModel.setRowCount(0);
+                			for(String[] row : rowData) {
+                				tableModel.addRow(row);
+                			}
+                			
+                			//Update the text field
+                			textField.setText("");
+                			
+						}
+					}
+				}
+			}
+		});
 	}
 	
+	private boolean updateFinalGrade(String studentID, String courseID, String grade) {
+		try {
+			Connection connection = DBConnect.connection;
+			String query = "UPDATE Students_Enrolled_In_Courses SET grade="+ grade + " WHERE course_id="+courseID+" AND student_id=" + studentID;
+			Statement stm = connection.createStatement();
+			int row = stm.executeUpdate(query);
+			stm.close();
+			
+			if(row > 0) {
+				return true;
+			}
+			return false;
+			
+		}catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 	private ArrayList<ArrayList<String>> setCourseList() {
 		ArrayList<ArrayList<String>> courseList = new ArrayList<>();
@@ -106,13 +200,13 @@ public class ProfessorCourseGrades extends JPanel {
 		
 		try {
 			Connection connection = DBConnect.connection;
-			String query = "SELECT sc.course_id, s.first_name, s.last_name, sc.grade FROM Students_Enrolled_In_Courses sc INNER JOIN Students s on sc.student_id = s.student_id WHERE course_id = " + courseID;
+			String query = "SELECT sc.course_id, s.student_id, s.first_name, s.last_name, sc.grade FROM Students_Enrolled_In_Courses sc INNER JOIN Students s on sc.student_id = s.student_id WHERE course_id = " + courseID;
 			Statement stm = connection.createStatement();
 			ResultSet result = stm.executeQuery(query);
 			
 			while(result.next()) {
 				String studentName = result.getString("first_name") + " " + result.getString("last_name");
-				String theCourseID = result.getString("course_id");
+				String theCourseID = result.getString("student_id");
 				String grade = result.getString("grade");
 				
 				studentGrades.add(new String[] {theCourseID, studentName, grade});

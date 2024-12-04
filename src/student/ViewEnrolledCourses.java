@@ -1,10 +1,11 @@
+package student;
 import java.sql.*;
 import java.util.Scanner;
 
 public class ViewEnrolledCourses {
 	private static final String DB_URL = "jdbc:mysql://localhost:3306/university_db";
     private static final String DB_USERNAME = "root";
-    private static final String DB_PASSWORD = "password";
+    private static final String DB_PASSWORD = "Ecu@dor95";
 
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);

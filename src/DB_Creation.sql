@@ -23,7 +23,7 @@ CREATE TABLE Students(
     first_name VARCHAR(255),
     last_name VARCHAR(255),
     PRIMARY KEY(student_id),
-    FOREIGN KEY (student_id) REFERENCES Accounts(user_id);
+    FOREIGN KEY (student_id) REFERENCES Accounts(user_id)
 );
 
 CREATE TABLE Professors(
@@ -31,7 +31,7 @@ CREATE TABLE Professors(
     first_name VARCHAR(255),
     last_name VARCHAR(255),
     PRIMARY KEY(professor_id),
-    FOREIGN KEY (professor_id) REFERENCES Accounts(user_id);
+    FOREIGN KEY (professor_id) REFERENCES Accounts(user_id)
 );
 
 
@@ -103,6 +103,7 @@ CREATE TABLE Appointments(
     FOREIGN KEY(professor_id) REFERENCES Admins(admin_id),
     FOREIGN KEY(student_id) REFERENCES Students(student_id)
 );
+
 
 SELECT * FROM ACCOUNTS;
 SELECT * FROM course_requests;
