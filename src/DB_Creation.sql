@@ -79,18 +79,28 @@ CREATE TABLE Students_Enrolled_In_Courses(
     FOREIGN KEY(course_id) REFERENCES Courses(course_id),
     FOREIGN KEY(student_id) REFERENCES Students(student_id)
 );
+
+CREATE TABLE Admins(
+	admin_id INT,
+	first_name VARCHAR(255),
+	last_name VARCHAR(255),
+	PRIMARY KEY(admin_id),
+	FOREIGN KEY(admin_id) REFERENCES accounts(user_id)
+)
+
 SELECT * FROM course_requests;
 UPDATE course_requests set request_status='Pending' WHERE student_id=1;
+
 CREATE TABLE Appointments(
-	appointment_id INT,
+	appointment_id INT AUTO_INCREMENT,
     professor_id INT,
     student_id INT,
-    appointment_date DATE,
-    appointment_time TIMESTAMP,
+    appointment_date VARCHAR(255),
+    appointment_time VARCHAR(255),
     appointment_notes LONGTEXT,
     appointment_status VARCHAR(255),
     PRIMARY KEY(appointment_id),
-    FOREIGN KEY(professor_id) REFERENCES Professors(professor_id),
+    FOREIGN KEY(professor_id) REFERENCES Admins(admin_id),
     FOREIGN KEY(student_id) REFERENCES Students(student_id)
 );
 
