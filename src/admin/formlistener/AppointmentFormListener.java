@@ -54,9 +54,11 @@ public class AppointmentFormListener implements TableModelListener, ActionListen
 		int rowIndex = tableModel.getSelectedRowIndex();
 		if(rowIndex < 0) {
 			showPopupMessage("No Appointment Selected.", "Error!");
+			return;
 		}
 		if(!isInformationNew()) {
 			showPopupMessage("No Changes Made.", "Error!");
+			return;
 		}
 		else {
 			boolean isQuerySuccessful = updateDB();

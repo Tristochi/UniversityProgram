@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import custom.CustomTableModel;
+import custom.FormRefresh;
 import custom.RadioButtonEditor;
 import custom.RadioButtonRenderer;
 import dbconnect.DBConnect;
@@ -32,7 +33,7 @@ import admin.formlistener.RemoveStudentCourseListener;
 import admin.formlistener.StudentTableListener;
 import javax.swing.JButton;
 
-public class RemoveStudentCourseForm extends JPanel {
+public class RemoveStudentCourseForm extends JPanel implements FormRefresh {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel anchorPane;
@@ -149,15 +150,7 @@ public class RemoveStudentCourseForm extends JPanel {
 		StudentTableListener listener = new StudentTableListener(this, studentTableModel);
 		studentTableModel.addTableModelListener(listener);
 		
-		studentButtonGroup = new ButtonGroup();
-		
-		// add radio buttons in the first column
-		for(int i = 0; i < studentTableModel.getRowCount(); i++) {
-			JRadioButton radioButton = new JRadioButton();
-			studentButtonGroup.add(radioButton);
-			studentTableModel.setValueAt(radioButton, i, 0);
-		}
-		
+		addRadioButtons(studentTableModel);
 		
 		studentTable = new JTable(studentTableModel);
 		studentTable.setPreferredScrollableViewportSize(new Dimension(0, 0));
@@ -184,8 +177,6 @@ public class RemoveStudentCourseForm extends JPanel {
 		String[] columnNames = {"Select Course", "Course ID", "Course Name", "Course Semester", "Course Day", "Start Time", "End Time", "Professor"};
 		
 		courseTableModel = new CustomTableModel(new String[0][0], columnNames);
-		// add table listener
-		
 		
 		courseTable = new JTable(courseTableModel);
 		courseTable.setEnabled(false); //set disabled since a student has not been selected yet.
@@ -281,6 +272,16 @@ public class RemoveStudentCourseForm extends JPanel {
 		}
 	}
 	
+	private void addRadioButtons(CustomTableModel tableModel) {
+		ButtonGroup buttonGroup = new ButtonGroup();
+		
+		for(int i = 0; i < tableModel.getRowCount(); i++) {
+			JRadioButton radioButton = new JRadioButton();
+			buttonGroup.add(radioButton);
+			tableModel.setValueAt(radioButton, i, 0);
+		}
+	}
+	
 	/*
 	 * Public Methods
 	 */
@@ -290,14 +291,7 @@ public class RemoveStudentCourseForm extends JPanel {
 		String[][] rowData = getCourseInfo(studentId);
 		
 		courseTableModel.setDataVector(rowData, columnNames);
-		courseButtonGroup = new ButtonGroup();
-		
-		// add radio buttons in the first column
-		for(int i = 0; i < courseTableModel.getRowCount(); i++) {
-			JRadioButton radioButton = new JRadioButton();
-			courseButtonGroup.add(radioButton);
-			courseTableModel.setValueAt(radioButton, i, 0);
-		}
+		addRadioButtons(courseTableModel);
 		
 		String labelText = String.format("Showing Courses For: %s (ID: %s)", studentName, studentId);
 		studentLabel.setText(labelText);
@@ -307,6 +301,39 @@ public class RemoveStudentCourseForm extends JPanel {
 		courseTable.getColumn("Select Course").setCellRenderer(new RadioButtonRenderer());
 		
 		courseTableModel.fireTableDataChanged();
+	}
+	
+	public void updateStudentTableModel() {
+		String[] columnNames = {"Select Student", "Student ID", "First Name", "Last Name"};
+		String[][] rowData = getStudentInfo();
+		
+		studentTableModel.setDataVector(rowData, columnNames);
+		
+		addRadioButtons(studentTableModel);
+		
+		studentTable.getColumn("Select Student").setCellEditor(new RadioButtonEditor(new JCheckBox()));
+		studentTable.getColumn("Select Student").setCellRenderer(new RadioButtonRenderer());
+		studentTable.getColumn("Select Student").setMinWidth(140);
+		studentTable.getColumn("Select Student").setMaxWidth(140);
+		
+		studentTableModel.fireTableDataChanged();
+	}
+	
+	public void clearCourseTableModel() {
+		String[] columnNames = {"Select Course", "Course ID", "Course Name", "Course Semester", "Course Day", "Start Time", "End Time", "Professor"};
+		courseTableModel.setDataVector(new String[0][0], columnNames);
+		
+		courseTable.setEnabled(false);
+		courseTable.getColumn("Select Course").setCellEditor(new RadioButtonEditor(new JCheckBox()));
+		courseTable.getColumn("Select Course").setCellRenderer(new RadioButtonRenderer());
+		
+		courseTableModel.fireTableDataChanged();
+	}
+	
+	@Override
+	public void refreshComponents() {
+		updateStudentTableModel();
+		clearCourseTableModel();
 	}
 }
 

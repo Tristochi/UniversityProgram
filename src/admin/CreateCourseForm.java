@@ -25,6 +25,7 @@ import javax.swing.text.MaskFormatter;
 import GUILook.GUILookAndFeel;
 import admin.formlistener.CreateCourseFormListener;
 import custom.CustomComboBox;
+import custom.FormRefresh;
 import dbconnect.DBConnect;
 
 import javax.swing.JComboBox;
@@ -39,7 +40,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.SwingConstants;
 
-public class CreateCourseForm extends JPanel {
+public class CreateCourseForm extends JPanel implements FormRefresh {
 
 	private static final long serialVersionUID = 1L;
 	private final int MAX_CHARACTERS = 254;
@@ -386,6 +387,7 @@ public class CreateCourseForm extends JPanel {
 	 */
 
 	public void setSemesterComboBox() {
+		professorComboBox.removeAllItems();
 		ArrayList<String> semesterList = new ArrayList<>();
 
 		try {
@@ -408,6 +410,7 @@ public class CreateCourseForm extends JPanel {
 	}
 
 	public void setProfessorComboBox() {
+		professorComboBox.removeAllItems();
 		try {
 			Connection connection = DBConnect.connection;
 			String query = String.format("SELECT professor_id, first_name, last_name FROM professors");
@@ -455,5 +458,11 @@ public class CreateCourseForm extends JPanel {
 		}
 
 		return format;
+	}
+	
+	@Override
+	public void refreshComponents() {
+		setSemesterComboBox();
+		setProfessorComboBox();
 	}
 }

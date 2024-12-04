@@ -40,6 +40,9 @@ public class RemoveStudentCourseListener implements ActionListener {
 			String[] studentInfo = studentTableModel.getRowDataAtIndex(studentTableIndex);
 			String studentId = studentInfo[0];
 			String studentName = studentInfo[1] + " " + studentInfo[2];
+			
+			showPopupMessage("Course Removed.", "");
+			
 			removeStudentFromCourse(courseId, studentId);
 			mainPane.updateCourseInfoPane(studentId, studentName);
 		}

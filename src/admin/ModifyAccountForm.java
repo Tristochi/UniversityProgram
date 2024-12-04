@@ -33,6 +33,7 @@ import GUILook.GUILookAndFeel;
 import admin.formlistener.ModifyAccountFormListener;
 import admin.formlistener.ModifyAccountTableListener;
 import custom.CustomTableModel;
+import custom.FormRefresh;
 import custom.RadioButtonEditor;
 import custom.RadioButtonRenderer;
 
@@ -41,7 +42,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPasswordField;
 
-public class ModifyAccountForm extends JPanel {
+public class ModifyAccountForm extends JPanel implements FormRefresh{
 
 	private static final long serialVersionUID = 1L;
 	private JPanel anchorPane;
@@ -400,5 +401,10 @@ public class ModifyAccountForm extends JPanel {
 				textField.setText("");
 			}
 		}
+	}
+	
+	@Override
+	public void refreshComponents() {
+		updateTableModel();
 	}
 }
