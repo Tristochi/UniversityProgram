@@ -21,6 +21,7 @@ import admin.formlistener.ModifyCourseTableListener;
 import admin.formlistener.RemoveCourseButtonListener;
 import custom.CustomComboBox;
 import custom.CustomTableModel;
+import custom.FormRefresh;
 import custom.RadioButtonEditor;
 import custom.RadioButtonRenderer;
 import dbconnect.DBConnect;
@@ -53,7 +54,7 @@ import javax.swing.JTextArea;
  * GUI to Modify Or Remove Selected Course.
  */
 
-public class ModifyCourseForm extends JPanel {
+public class ModifyCourseForm extends JPanel implements FormRefresh {
 
 	private static final long serialVersionUID = 1L;
 	private final int MAX_CHARACTERS = 254;
@@ -582,5 +583,10 @@ public class ModifyCourseForm extends JPanel {
 		endTimeTextField.setText("");
 		startTimeComboBox.removeAllItems();
 		endTimeComboBox.removeAllItems();
+	}
+	
+	@Override
+	public void refreshComponents() {
+		updateTableModel();
 	}
 }

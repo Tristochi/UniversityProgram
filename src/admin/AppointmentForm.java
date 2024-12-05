@@ -13,6 +13,7 @@ import javax.swing.border.EmptyBorder;
 import GUILook.GUILookAndFeel;
 import admin.formlistener.AppointmentFormListener;
 import custom.CustomTableModel;
+import custom.FormRefresh;
 import custom.RadioButtonEditor;
 import custom.RadioButtonRenderer;
 import dbconnect.DBConnect;
@@ -36,7 +37,7 @@ import javax.swing.JFrame;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
 
-public class AppointmentForm extends JPanel {
+public class AppointmentForm extends JPanel implements FormRefresh {
 
 	private static final long serialVersionUID = 1L;
 	private final int MAX_CHARACTERS = 254;
@@ -160,6 +161,8 @@ public class AppointmentForm extends JPanel {
 		gbc_statusComboBox.gridx = 1;
 		gbc_statusComboBox.gridy = 0;
 		formPane.add(statusComboBox, gbc_statusComboBox);
+		statusComboBox.addItem("Pending");
+		statusComboBox.addItem("Completed");
 		
 		scrollPane = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
@@ -196,7 +199,7 @@ public class AppointmentForm extends JPanel {
 		
 		appointmentTable = new JTable(tableModel);
 		appointmentTable.setPreferredScrollableViewportSize(new Dimension(0, 0));
-		appointmentTable.setFont(new Font("Tahoma", Font.BOLD, 14));
+		appointmentTable.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		appointmentTable.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
 		appointmentTable.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		appointmentTable.setRowHeight(appointmentTable.getRowHeight() + 8);
@@ -220,8 +223,6 @@ public class AppointmentForm extends JPanel {
 		gbc_submitButton.gridx = 1;
 		gbc_submitButton.gridy = 2;
 		formPane.add(submitButton, gbc_submitButton);
-		statusComboBox.addItem("Pending");
-		statusComboBox.addItem("Completed");
 		
 		AppointmentFormListener listener = new AppointmentFormListener(this, tableModel, statusComboBox, notesTextArea);
 		submitButton.addActionListener(listener);
@@ -306,5 +307,10 @@ public class AppointmentForm extends JPanel {
 		
 		tableModel.fireTableDataChanged();
 		clearTextFields();
+	}
+
+	@Override
+	public void refreshComponents() {
+		updateTableModel();
 	}
 }

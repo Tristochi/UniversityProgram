@@ -11,6 +11,8 @@ import java.awt.Font;
 import javax.swing.JTextField;
 
 import admin.formlistener.CreateAccountFormListener;
+import custom.FormRefresh;
+
 import javax.swing.JPasswordField;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
@@ -175,6 +177,4 @@ public class CreateAccountForm extends JPanel {
 																		firstNameTextField, lastNameTextField, 
 																			tempPassTextField, accountTypeComboBox));
 	}
-	
-	
 }
