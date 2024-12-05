@@ -10,6 +10,8 @@ import javax.swing.JButton;
 import dbconnect.DBConnect;
 import professor.ProfessorMainMenu;
 import admin.AdminMainMenu;
+import student.CourseEnrollment;
+import encryption.EncryptionManager;
 
 public class LoginScreen {
 
@@ -125,10 +127,30 @@ public class LoginScreen {
 			
 			String dbPassword = result.getString("password");
 			if(password.equals(dbPassword)) {
+				
 				int accountType = Integer.parseInt(result.getString("account_type_id"));
 				switch(accountType) {
 				case 1:
 					//Student
+					goToStudent();
+					break;
+				case 2:
+					//Professor
+					goToProfessorMenu();
+					break;
+				case 3:
+					//Admin
+					goToAdminMenu();
+					break;
+				default:
+					System.out.println("nothing");
+				}
+			} else if(password.equals(EncryptionManager.decrypt(dbPassword))){
+				int accountType = Integer.parseInt(result.getString("account_type_id"));
+				switch(accountType) {
+				case 1:
+					//Student
+					goToStudent();
 					break;
 				case 2:
 					//Professor
@@ -142,9 +164,17 @@ public class LoginScreen {
 					System.out.println("nothing");
 				}
 			}
+			
 		}catch (Exception e) {
 			System.out.println(e);
 		}
+	}
+	
+	public void goToStudent() {
+		frame.dispose();
+		CourseEnrollment screen = new CourseEnrollment();
+		screen.setVisible(true);
+		System.out.println("Display student screen");
 	}
 	
 	public void goToMainMenu() {

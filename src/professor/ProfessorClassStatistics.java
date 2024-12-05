@@ -119,11 +119,14 @@ public class ProfessorClassStatistics extends JPanel {
 		double totalScore = 0.00;
 		double count = 0.00;
 		for(String[] student : currentStudents) {
-			totalScore += Double.parseDouble(student[2]);
-			count += 1;
+			if(student[2] != null) {
+				totalScore += Double.parseDouble(student[2]);
+				count += 1;
+			}
 		}
 		
 		double classAverage = totalScore/count;
+		
 		classAvgLabel.setText("Class Average: " + classAverage);
 	}
 	

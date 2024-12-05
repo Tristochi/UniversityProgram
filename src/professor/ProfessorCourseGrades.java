@@ -151,7 +151,6 @@ public class ProfessorCourseGrades extends JPanel {
 			Statement stm = connection.createStatement();
 			int row = stm.executeUpdate(query);
 			stm.close();
-			
 			if(row > 0) {
 				return true;
 			}
@@ -161,6 +160,7 @@ public class ProfessorCourseGrades extends JPanel {
 			throw new RuntimeException(e);
 		}
 	}
+	
 	
 	private ArrayList<ArrayList<String>> setCourseList() {
 		ArrayList<ArrayList<String>> courseList = new ArrayList<>();

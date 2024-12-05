@@ -105,6 +105,7 @@ CREATE TABLE Appointments(
 );
 
 
+
 SELECT * FROM ACCOUNTS;
 SELECT * FROM course_requests;
 SELECT * FROM Students_Enrolled_In_Courses;
@@ -112,3 +113,4 @@ INSERT INTO Students_Enrolled_In_Courses VALUES(2, 2, 100);
 SELECT * FROM STUDENTS;
 INSERT INTO Students VALUES (2, 'Katelyn', 'Kishkunas');
 SELECT * FROM COURSES;
+SELECT sc.course_id, s.student_id, s.first_name, s.last_name, sc.grade FROM Students_Enrolled_In_Courses sc INNER JOIN Students s on sc.student_id = s.student_id WHERE course_id = 2;

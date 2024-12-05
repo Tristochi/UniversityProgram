@@ -1,81 +1,133 @@
 package student;
+import java.awt.*;
 import java.sql.*;
-import java.util.Scanner;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class CourseEnrollment {
+public class CourseEnrollment extends JFrame {
 
     private static final String DB_URL = "jdbc:mysql://localhost:3306/university_db";
     private static final String DB_USERNAME = "root";
     private static final String DB_PASSWORD = "Ecu@dor95";
+    
+    private JTextField studentIdField;
+    private JTable coursesTable;
+    private DefaultTableModel tableModel;
+    private JLabel statusLabel;
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+    public CourseEnrollment() {
+        setTitle("Course Enrollment System");
+        setSize(900, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        System.out.print("Enter Student ID: ");
-        int studentId = scanner.nextInt();
+        // Layout setup
+        JPanel mainPanel = new JPanel(new BorderLayout());
 
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
-            // Check total credits enrolled
-            int totalCredits = getTotalCredits(connection, studentId);
-            System.out.printf("You are currently enrolled in %d credits.%n", totalCredits);
+        // Input panel
+        JPanel inputPanel = new JPanel();
+        inputPanel.add(new JLabel("Student ID:"));
+        studentIdField = new JTextField(10);
+        inputPanel.add(studentIdField);
 
-            if (totalCredits >= 18) {
-                System.out.println("You have reached the maximum credit limit of 18 credits. You cannot enroll in more courses.");
-                return;
-            }
+        JButton fetchCoursesButton = new JButton("Fetch Courses");
+        fetchCoursesButton.addActionListener(e -> fetchCourses());
+        inputPanel.add(fetchCoursesButton);
 
-            // Display available courses
-            System.out.println("\nAvailable Courses:");
-            displayAvailableCourses(connection, studentId);
+        mainPanel.add(inputPanel, BorderLayout.NORTH);
 
-            // Enroll in a course
-            System.out.print("Enter the Course ID to enroll: ");
-            int courseId = scanner.nextInt();
+        // Courses table
+        String[] columnNames = { "Course ID", "Name", "Semester", "Max Students" };
+        tableModel = new DefaultTableModel(columnNames, 0);
+        coursesTable = new JTable(tableModel);
+        JScrollPane tableScrollPane = new JScrollPane(coursesTable);
+        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
 
-            // Check if the course is full
-            if (isCourseFull(connection, courseId)) {
-                System.out.println("The course is full. Sending a request to the professor...");
-                if (sendCourseRequest(connection, studentId, courseId)) {
-                    System.out.println("Request sent successfully. Wait for the professor's response.");
-                } else {
-                    System.out.println("Failed to send the request. Please try again.");
-                }
-            } else {
-                System.out.println("The course has available slots. Enrolling...");
-                if (enrollInCourse(connection, studentId, courseId)) {
-                    System.out.println("Successfully enrolled in the course.");
-                } else {
-                    System.out.println("Failed to enroll in the course. Please try again.");
-                }
-            }
+        // Action panel
+        JPanel actionPanel = new JPanel();
+        JButton enrollButton = new JButton("Enroll in Course");
+        enrollButton.addActionListener(e -> enrollInCourse());
+        
+        JButton gradesBtn = new JButton("View Grades");
+        actionPanel.add(gradesBtn);
+        gradesBtn.addActionListener(e -> launchGrades());
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            scanner.close();
-        }
+        
+        JButton availableCourseBtn = new JButton("Available Courses");
+        actionPanel.add(availableCourseBtn);
+        availableCourseBtn.addActionListener(e -> availableCourse());
+        
+        JButton appointmentButton = new JButton("Appointments");
+        actionPanel.add(appointmentButton);
+        actionPanel.add(enrollButton);
+        
+        appointmentButton.addActionListener(e -> launchAppointments());
+        
+        JButton dropCourses = new JButton("Drop Courses");
+        actionPanel.add(dropCourses);
+        dropCourses.addActionListener(e -> dropCourses());
+        
+        JButton viewEnrolledBtn = new JButton("View Enrolled Courses");
+        actionPanel.add(viewEnrolledBtn);
+        viewEnrolledBtn.addActionListener(e -> launchEnrolled());
+
+        statusLabel = new JLabel();
+        actionPanel.add(statusLabel);
+
+        mainPanel.add(actionPanel, BorderLayout.SOUTH);
+
+        getContentPane().add(mainPanel);
+    }
+    
+    private void launchEnrolled() {
+    	this.dispose();
+    	ViewEnrolledCourses screen = new ViewEnrolledCourses();
+    	screen.setVisible(true);
+    }
+    
+    private void dropCourses() {
+    	this.dispose();
+    	DropEnrolledCourse screen = new DropEnrolledCourse();
+    	screen.setVisible(true);	
+    }
+    
+    private void launchAppointments() {
+    	this.dispose();
+    	MakeAppointment screen = new MakeAppointment();
+    	screen.setVisible(true);
+    }
+    
+    private void availableCourse() {
+    	this.dispose();
+    	ViewAvailableCourses screen = new ViewAvailableCourses();
+    	screen.setVisible(true);
+    }
+    
+    private void launchGrades() {
+    	this.dispose();
+    	ViewFinalGradeAndGPA screen = new ViewFinalGradeAndGPA();
+    	screen.setVisible(true);
     }
 
-    private static int getTotalCredits(Connection connection, int studentId) throws SQLException {
-        String query = """
-            SELECT SUM(c.max_students) AS total_credits
-            FROM Students_Enrolled_In_Courses sec
-            JOIN Courses c ON sec.course_id = c.course_id
-            WHERE sec.student_id = ?;
-        """;
+    private void fetchCourses() {
+        tableModel.setRowCount(0); // Clear existing rows
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, studentId);
-            ResultSet resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                return resultSet.getInt("total_credits");
-            }
+        String studentIdText = studentIdField.getText().trim();
+        if (studentIdText.isEmpty()) {
+            statusLabel.setText("Please enter a valid Student ID.");
+            return;
         }
-        return 0;
-    }
 
-    private static void displayAvailableCourses(Connection connection, int studentId) throws SQLException {
+        int studentId;
+        try {
+            studentId = Integer.parseInt(studentIdText);
+        } catch (NumberFormatException e) {
+            statusLabel.setText("Invalid Student ID. Please enter a number.");
+            return;
+        }
+
         String query = """
             SELECT c.course_id, c.course_name, c.course_semester, c.max_students
             FROM Courses c
@@ -84,7 +136,9 @@ public class CourseEnrollment {
             );
         """;
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
             statement.setInt(1, studentId);
             ResultSet resultSet = statement.executeQuery();
 
@@ -94,13 +148,58 @@ public class CourseEnrollment {
                 String courseSemester = resultSet.getString("course_semester");
                 int maxStudents = resultSet.getInt("max_students");
 
-                System.out.printf("Course ID: %d, Name: %s, Semester: %s, Max Students: %d%n",
-                        courseId, courseName, courseSemester, maxStudents);
+                tableModel.addRow(new Object[]{ courseId, courseName, courseSemester, maxStudents });
             }
+
+            if (tableModel.getRowCount() == 0) {
+                statusLabel.setText("No available courses for this student.");
+            } else {
+                statusLabel.setText("Courses fetched successfully.");
+            }
+        } catch (SQLException e) {
+            statusLabel.setText("Error fetching courses: " + e.getMessage());
         }
     }
 
-    private static boolean isCourseFull(Connection connection, int courseId) throws SQLException {
+    private void enrollInCourse() {
+        int selectedRow = coursesTable.getSelectedRow();
+        if (selectedRow == -1) {
+            statusLabel.setText("Please select a course to enroll.");
+            return;
+        }
+
+        int courseId = (int) tableModel.getValueAt(selectedRow, 0);
+        String studentIdText = studentIdField.getText().trim();
+
+        int studentId;
+        try {
+            studentId = Integer.parseInt(studentIdText);
+        } catch (NumberFormatException e) {
+            statusLabel.setText("Invalid Student ID. Please enter a number.");
+            return;
+        }
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            if (isCourseFull(connection, courseId)) {
+                if (sendCourseRequest(connection, studentId, courseId)) {
+                    statusLabel.setText("Course is full. Request sent to professor.");
+                } else {
+                    statusLabel.setText("Failed to send request. Please try again.");
+                }
+            } else {
+                if (enrollStudentInCourse(connection, studentId, courseId)) {
+                    statusLabel.setText("Successfully enrolled in the course.");
+                    fetchCourses(); // Refresh courses list
+                } else {
+                    statusLabel.setText("Failed to enroll. Please try again.");
+                }
+            }
+        } catch (SQLException e) {
+            statusLabel.setText("Error during enrollment: " + e.getMessage());
+        }
+    }
+
+    private boolean isCourseFull(Connection connection, int courseId) throws SQLException {
         String query = """
             SELECT COUNT(*) AS enrolled_count, c.max_students
             FROM Students_Enrolled_In_Courses sec
@@ -122,22 +221,21 @@ public class CourseEnrollment {
         return false;
     }
 
-    private static boolean enrollInCourse(Connection connection, int studentId, int courseId) throws SQLException {
+    private boolean enrollStudentInCourse(Connection connection, int studentId, int courseId) throws SQLException {
+    	System.out.println("Enrolling");
         String query = """
             INSERT INTO Students_Enrolled_In_Courses (course_id, student_id, grade)
-            VALUES (?, ?, NULL);
+            VALUES (?, ?, 0);
         """;
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, courseId);
             statement.setInt(2, studentId);
-
-            int rowsAffected = statement.executeUpdate();
-            return rowsAffected > 0;
+            return statement.executeUpdate() > 0;
         }
     }
 
-    private static boolean sendCourseRequest(Connection connection, int studentId, int courseId) throws SQLException {
+    private boolean sendCourseRequest(Connection connection, int studentId, int courseId) throws SQLException {
         String query = """
             INSERT INTO Course_Requests (course_id, student_id, request_date, request_time, request_status)
             VALUES (?, ?, CURDATE(), CURTIME(), 'Pending');
@@ -146,9 +244,14 @@ public class CourseEnrollment {
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, courseId);
             statement.setInt(2, studentId);
-
-            int rowsAffected = statement.executeUpdate();
-            return rowsAffected > 0;
+            return statement.executeUpdate() > 0;
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            CourseEnrollment enrollmentFrame = new CourseEnrollment();
+            enrollmentFrame.setVisible(true);
+        });
     }
 }

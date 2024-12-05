@@ -1,47 +1,91 @@
 package student;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.*;
-import java.util.Scanner;
 
-public class DropEnrolledCourse {
+public class DropEnrolledCourse extends JFrame {
 
     private static final String DB_URL = "jdbc:mysql://localhost:3306/university_db";
     private static final String DB_USERNAME = "root";
     private static final String DB_PASSWORD = "Ecu@dor95";
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+    private JTextField studentIdField;
+    private JTable enrolledCoursesTable;
+    private DefaultTableModel tableModel;
+    private JLabel statusLabel;
 
-        System.out.print("Enter Student ID: ");
-        int studentId = scanner.nextInt();
+    public DropEnrolledCourse() {
+        setTitle("Drop Enrolled Courses");
+        setSize(800, 500);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
-            // Display currently enrolled courses
-            System.out.println("Currently Enrolled Courses:");
-            displayEnrolledCourses(connection, studentId);
+        // Layout setup
+        JPanel mainPanel = new JPanel(new BorderLayout());
 
-            // Prompt to drop a course
-            System.out.print("Enter the Course ID to drop: ");
-            int courseId = scanner.nextInt();
+        // Input Panel
+        JPanel inputPanel = new JPanel();
+        
+        JButton returnBtn = new JButton("Return");
+        inputPanel.add(returnBtn);
+        returnBtn.addActionListener(e->returnHome());
+        inputPanel.add(new JLabel("Student ID:"));
+        studentIdField = new JTextField(10);
+        inputPanel.add(studentIdField);
 
-            // Attempt to drop the course
-            if (dropCourse(connection, studentId, courseId)) {
-                System.out.println("Successfully dropped the course.");
-            } else {
-                System.out.println("Failed to drop the course. Please check the course ID and try again.");
-            }
+        JButton fetchButton = new JButton("Fetch Enrolled Courses");
+        fetchButton.addActionListener(e -> fetchEnrolledCourses());
+        inputPanel.add(fetchButton);
 
-            // Display updated enrolled courses
-            System.out.println("\nUpdated Enrolled Courses:");
-            displayEnrolledCourses(connection, studentId);
+        mainPanel.add(inputPanel, BorderLayout.NORTH);
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            scanner.close();
-        }
+        // Table for enrolled courses
+        String[] columnNames = { "Course ID", "Course Name", "Semester" };
+        tableModel = new DefaultTableModel(columnNames, 0);
+        enrolledCoursesTable = new JTable(tableModel);
+        JScrollPane tableScrollPane = new JScrollPane(enrolledCoursesTable);
+        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
+
+        // Drop Button and Status
+        JPanel actionPanel = new JPanel();
+        JButton dropButton = new JButton("Drop Selected Course");
+        dropButton.addActionListener(e -> dropSelectedCourse());
+        actionPanel.add(dropButton);
+
+        statusLabel = new JLabel();
+        actionPanel.add(statusLabel);
+
+        mainPanel.add(actionPanel, BorderLayout.SOUTH);
+
+        getContentPane().add(mainPanel);
+    }
+    
+    private void returnHome() {
+    	this.dispose();
+    	CourseEnrollment screen = new CourseEnrollment();
+    	screen.setVisible(true);
     }
 
-    private static void displayEnrolledCourses(Connection connection, int studentId) throws SQLException {
+    private void fetchEnrolledCourses() {
+        tableModel.setRowCount(0); // Clear existing rows
+
+        String studentIdText = studentIdField.getText().trim();
+        if (studentIdText.isEmpty()) {
+            statusLabel.setText("Please enter a valid Student ID.");
+            return;
+        }
+
+        int studentId;
+        try {
+            studentId = Integer.parseInt(studentIdText);
+        } catch (NumberFormatException e) {
+            statusLabel.setText("Invalid Student ID. Please enter a number.");
+            return;
+        }
+
         String query = """
             SELECT c.course_id, c.course_name, c.course_semester
             FROM Students_Enrolled_In_Courses sec
@@ -49,9 +93,10 @@ public class DropEnrolledCourse {
             WHERE sec.student_id = ?;
         """;
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, studentId);
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
+            statement.setInt(1, studentId);
             ResultSet resultSet = statement.executeQuery();
             boolean hasCourses = false;
 
@@ -61,28 +106,69 @@ public class DropEnrolledCourse {
                 String courseName = resultSet.getString("course_name");
                 String courseSemester = resultSet.getString("course_semester");
 
-                System.out.printf("Course ID: %d, Name: %s, Semester: %s%n", courseId, courseName, courseSemester);
+                tableModel.addRow(new Object[]{ courseId, courseName, courseSemester });
             }
 
             if (!hasCourses) {
-                System.out.println("No courses currently enrolled.");
+                statusLabel.setText("No courses currently enrolled.");
+            } else {
+                statusLabel.setText("Enrolled courses fetched successfully.");
             }
+        } catch (SQLException e) {
+            statusLabel.setText("Error fetching enrolled courses: " + e.getMessage());
         }
     }
 
-    private static boolean dropCourse(Connection connection, int studentId, int courseId) throws SQLException {
+    private void dropSelectedCourse() {
+        int selectedRow = enrolledCoursesTable.getSelectedRow();
+        if (selectedRow == -1) {
+            statusLabel.setText("Please select a course to drop.");
+            return;
+        }
+
+        String studentIdText = studentIdField.getText().trim();
+        if (studentIdText.isEmpty()) {
+            statusLabel.setText("Please enter a valid Student ID.");
+            return;
+        }
+
+        int studentId;
+        try {
+            studentId = Integer.parseInt(studentIdText);
+        } catch (NumberFormatException e) {
+            statusLabel.setText("Invalid Student ID. Please enter a number.");
+            return;
+        }
+
+        int courseId = (int) tableModel.getValueAt(selectedRow, 0);
+
         String query = """
             DELETE FROM Students_Enrolled_In_Courses
             WHERE student_id = ? AND course_id = ?;
         """;
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
             statement.setInt(1, studentId);
             statement.setInt(2, courseId);
 
             int rowsAffected = statement.executeUpdate();
-            return rowsAffected > 0;
+            if (rowsAffected > 0) {
+                statusLabel.setText("Successfully dropped the course.");
+                fetchEnrolledCourses(); // Refresh the table
+            } else {
+                statusLabel.setText("Failed to drop the course. Please try again.");
+            }
+        } catch (SQLException e) {
+            statusLabel.setText("Error dropping course: " + e.getMessage());
         }
     }
-}
 
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            DropEnrolledCourse frame = new DropEnrolledCourse();
+            frame.setVisible(true);
+        });
+    }
+}
