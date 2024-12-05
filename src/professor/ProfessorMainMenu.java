@@ -50,6 +50,9 @@ public class ProfessorMainMenu {
 		
 		ProfessorCourseGrades gradeView = new ProfessorCourseGrades(this.getCurrentUser());
 		tabbedPane.addTab("Grades", null, gradeView, null);
+		
+		ProfessorClassStatistics statsView = new ProfessorClassStatistics(this.getCurrentUser());
+		tabbedPane.addTab("Statistics", null, statsView, null);
 	}
 	
 	public String getCurrentUser() {
