@@ -1,63 +1,130 @@
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.*;
-import java.util.Scanner;
 
-public class MakeAppointment {
-
+public class MakeAppointment extends JFrame {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/university_db";
     private static final String DB_USERNAME = "root";
     private static final String DB_PASSWORD = "password";
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+    private JTextField studentIdField;
+    private JTable slotsTable;
+    private JTextField dateField;
+    private JTextField timeField;
+    private DefaultTableModel slotsTableModel;
 
-        System.out.print("Enter Student ID: ");
-        int studentId = scanner.nextInt();
+    public MakeAppointment() {
+        setTitle("Make Appointment");
+        setSize(800, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        // Main Panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+
+        // Input Panel
+        JPanel inputPanel = new JPanel();
+        inputPanel.add(new JLabel("Student ID:"));
+        studentIdField = new JTextField(10);
+        inputPanel.add(studentIdField);
+
+        JButton fetchSlotsButton = new JButton("View Available Slots");
+        fetchSlotsButton.addActionListener(e -> fetchAvailableSlots());
+        inputPanel.add(fetchSlotsButton);
+
+        mainPanel.add(inputPanel, BorderLayout.NORTH);
+
+        // Slots Table Panel
+        slotsTableModel = new DefaultTableModel(new String[] { "Appointment Date", "Appointment Time" }, 0);
+        slotsTable = new JTable(slotsTableModel);
+        JScrollPane slotsScrollPane = new JScrollPane(slotsTable);
+
+        JPanel slotsPanel = new JPanel(new BorderLayout());
+        slotsPanel.add(new JLabel("Available Appointment Slots"), BorderLayout.NORTH);
+        slotsPanel.add(slotsScrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(slotsPanel, BorderLayout.CENTER);
+
+        // Appointment Panel
+        JPanel appointmentPanel = new JPanel();
+        appointmentPanel.add(new JLabel("Appointment Date (DD-MM-YYYY):"));
+        dateField = new JTextField(10);
+        appointmentPanel.add(dateField);
+
+        appointmentPanel.add(new JLabel("Appointment Time (HH:MM):"));
+        timeField = new JTextField(10);
+        appointmentPanel.add(timeField);
+
+        JButton makeAppointmentButton = new JButton("Schedule Appointment");
+        makeAppointmentButton.addActionListener(e -> scheduleAppointment());
+        appointmentPanel.add(makeAppointmentButton);
+
+        mainPanel.add(appointmentPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
+    }
+
+    private void fetchAvailableSlots() {
+        slotsTableModel.setRowCount(0); // Clear existing rows
 
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
-            displayAvailableSlots(connection);
+            String query = """
+                SELECT DISTINCT appointment_date, appointment_time
+                FROM Appointments
+                WHERE appointment_status != 'Confirmed';
+            """;
 
-            System.out.println("\nEnter the Appointment Date (DD-MM-YYYY): ");
-            String appointmentDate = scanner.next();
+            try (Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(query)) {
 
-            System.out.println("Enter the Appointment Time (HH:MM): ");
-            String appointmentTime = scanner.next();
+                while (resultSet.next()) {
+                    Date date = resultSet.getDate("appointment_date");
+                    Time time = resultSet.getTime("appointment_time");
+                    slotsTableModel.addRow(new Object[] { date, time });
+                }
 
-            // Insert appointment
-            if (makeAppointment(connection, studentId, appointmentDate, appointmentTime)) {
-                System.out.println("Appointment successfully scheduled.");
-            } else {
-                System.out.println("The selected time slot is unavailable. Please try a different time.");
+                if (slotsTableModel.getRowCount() == 0) {
+                    JOptionPane.showMessageDialog(this, "No available slots found.", "Information", JOptionPane.INFORMATION_MESSAGE);
+                }
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            scanner.close();
+            JOptionPane.showMessageDialog(this, "Error fetching slots: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private static void displayAvailableSlots(Connection connection) throws SQLException {
-        String query = """
-            SELECT DISTINCT a.appointment_date, a.appointment_time
-            FROM Appointments a
-            WHERE a.appointment_status != 'Confirmed';
-        """;
+    private void scheduleAppointment() {
+        String studentIdText = studentIdField.getText().trim();
+        String appointmentDate = dateField.getText().trim();
+        String appointmentTime = timeField.getText().trim();
 
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)) {
+        if (studentIdText.isEmpty() || appointmentDate.isEmpty() || appointmentTime.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill in all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-            System.out.println("Available Appointment Slots:");
-            System.out.println("-------------------------------------------------");
-            while (resultSet.next()) {
-                Date appointmentDate = resultSet.getDate("appointment_date");
-                Time appointmentTime = resultSet.getTime("appointment_time");
-                System.out.printf("Date: %s, Time: %s%n", appointmentDate, appointmentTime);
+        int studentId;
+        try {
+            studentId = Integer.parseInt(studentIdText);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid Student ID. Please enter a numeric value.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD)) {
+            if (makeAppointment(connection, studentId, appointmentDate, appointmentTime)) {
+                JOptionPane.showMessageDialog(this, "Appointment successfully scheduled.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "The selected time slot is unavailable.", "Error", JOptionPane.ERROR_MESSAGE);
             }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error scheduling appointment: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private static boolean makeAppointment(Connection connection, int studentId, String appointmentDate, String appointmentTime) throws SQLException {
-        // Check if the time slot is available
+    private boolean makeAppointment(Connection connection, int studentId, String appointmentDate, String appointmentTime) throws SQLException {
         String checkQuery = """
             SELECT COUNT(*) AS count
             FROM Appointments
@@ -74,9 +141,8 @@ public class MakeAppointment {
             }
         }
 
-        // Insert the appointment
         String insertQuery = """
-            INSERT INTO Appointments (appointment_id, professor_id, student_id, appointment_date, appointment_time, appointment_notes, appointment_status)
+            INSERT INTO Appointments (appointment_id, admin_id, student_id, appointment_date, appointment_time, appointment_notes, appointment_status)
             VALUES (NULL, NULL, ?, ?, ?, '', 'Confirmed');
         """;
 
@@ -89,4 +155,12 @@ public class MakeAppointment {
             return rowsAffected > 0;
         }
     }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            MakeAppointment frame = new MakeAppointment();
+            frame.setVisible(true);
+        });
+    }
 }
+
