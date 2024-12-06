@@ -105,7 +105,7 @@ CREATE TABLE Appointments(
 );
 
 
-
+SELECT * FROM past_courses_for_student;
 SELECT * FROM ACCOUNTS;
 SELECT * FROM course_requests;
 SELECT * FROM Students_Enrolled_In_Courses;
@@ -114,3 +114,8 @@ SELECT * FROM STUDENTS;
 INSERT INTO Students VALUES (2, 'Katelyn', 'Kishkunas');
 SELECT * FROM COURSES;
 SELECT sc.course_id, s.student_id, s.first_name, s.last_name, sc.grade FROM Students_Enrolled_In_Courses sc INNER JOIN Students s on sc.student_id = s.student_id WHERE course_id = 2;
+
+SELECT pc.semester, pc.course_name, pfg.final_grade
+JOIN past_final_grades pfg ON pc.course_id = pfg.course_id AND pc.student_id = pfg.student_id
+JOIN students_enrolled_in_courses sc ON sc.student_id = pfg.student_id
+ORDER BY pc.semester, pc.course_name;

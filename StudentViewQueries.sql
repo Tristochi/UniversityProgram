@@ -3,7 +3,7 @@ USE university_db;
 
 CREATE TABLE past_courses_for_student (
     course_id INT,               
-    student_id INT              
+    student_id INT,              
     course_name VARCHAR(255),    
     semester VARCHAR(255),        
     PRIMARY KEY (course_id, student_id),  

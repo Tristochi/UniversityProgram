@@ -125,6 +125,7 @@ public class ProfessorCourseGrades extends JPanel {
 						//Update the database
 						boolean result = updateFinalGrade(selectedStudentID, currentCourseID, enteredGrade);
 						
+						
 						if(result) {
 							//update the view and text field
                 			//update the table
@@ -145,12 +146,50 @@ public class ProfessorCourseGrades extends JPanel {
 	}
 	
 	private boolean updateFinalGrade(String studentID, String courseID, String grade) {
+		String letterGrade = "";
+		double gradeValue = Double.parseDouble(grade);
+		
+		if(gradeValue >= 97.00) {
+			letterGrade = "A+";
+			
+		} else if(gradeValue >= 93.00 && gradeValue < 97.00) {
+			letterGrade = "A";
+			
+		} else if(gradeValue >= 90.00 && gradeValue < 93.00) {
+			letterGrade = "A-";
+		
+		} else if(gradeValue >= 87.00 && gradeValue < 90.00) {
+			letterGrade = "B+";
+		
+		} else if(gradeValue >= 83.00 && gradeValue < 87.00) {
+			letterGrade = "B";
+		} else if(gradeValue >= 80.00 && gradeValue < 83.00) {
+			letterGrade = "B-";
+		} else if(gradeValue >= 77.00 && gradeValue < 80.00) {
+			letterGrade = "C+";
+		} else if(gradeValue >= 73.00 && gradeValue < 77.00) {
+			letterGrade = "C";
+		} else if(gradeValue >= 70.00 && gradeValue < 73.00) {
+			letterGrade = "C-";
+		} else if(gradeValue >= 67.00 && gradeValue < 70.00) {
+			letterGrade = "D+";
+		} else if(gradeValue >= 65.00 && gradeValue < 67.00) {
+			letterGrade = "D";
+		} else if(gradeValue < 65.00 ) {
+			letterGrade = "F";
+		}
+		
 		try {
 			Connection connection = DBConnect.connection;
 			String query = "UPDATE Students_Enrolled_In_Courses SET grade="+ grade + " WHERE course_id="+courseID+" AND student_id=" + studentID;
 			Statement stm = connection.createStatement();
 			int row = stm.executeUpdate(query);
+			
+			String query2 = "UPDATE past_final_grades SET final_grade= '" + letterGrade + "' WHERE course_id="+courseID+" AND student_id="  + studentID;
+			Statement stm1 = connection.createStatement();
+			int row1 = stm1.executeUpdate(query2);
 			stm.close();
+			stm1.close();
 			if(row > 0) {
 				return true;
 			}

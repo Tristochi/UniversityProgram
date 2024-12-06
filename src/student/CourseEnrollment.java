@@ -48,7 +48,12 @@ public class CourseEnrollment extends JFrame {
         // Action panel
         JPanel actionPanel = new JPanel();
         JButton enrollButton = new JButton("Enroll in Course");
-        enrollButton.addActionListener(e -> enrollInCourse());
+        enrollButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		enrollInCourse();
+        		
+        	}
+        });
         
         JButton gradesBtn = new JButton("View Grades");
         actionPanel.add(gradesBtn);
@@ -183,12 +188,25 @@ public class CourseEnrollment extends JFrame {
             if (isCourseFull(connection, courseId)) {
                 if (sendCourseRequest(connection, studentId, courseId)) {
                     statusLabel.setText("Course is full. Request sent to professor.");
+                    System.out.println("Course is full. Request sent to professor.");
                 } else {
                     statusLabel.setText("Failed to send request. Please try again.");
+                    System.out.println("Failed to send request. Please try again.");
                 }
             } else {
                 if (enrollStudentInCourse(connection, studentId, courseId)) {
+                	String courseName = (String) tableModel.getValueAt(selectedRow, 1);
+                	String semester = (String) tableModel.getValueAt(selectedRow, 2);
+                	
+                	System.out.println("Setting past course and grade");
+                	boolean pastCourse = setPastCourses(connection, studentId, courseId, courseName, semester);
+                	boolean setGrade = setDefaultFinalGrade(connection, studentId, courseId);
+                	
+                	System.out.println("Past course set: " + pastCourse);
+                	System.out.println("Past grade set: " + setGrade);
+                	
                     statusLabel.setText("Successfully enrolled in the course.");
+                    System.out.println("Successfully enrolled in the course.");
                     fetchCourses(); // Refresh courses list
                 } else {
                     statusLabel.setText("Failed to enroll. Please try again.");
@@ -227,12 +245,54 @@ public class CourseEnrollment extends JFrame {
             INSERT INTO Students_Enrolled_In_Courses (course_id, student_id, grade)
             VALUES (?, ?, 0);
         """;
+        
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, courseId);
             statement.setInt(2, studentId);
+            
             return statement.executeUpdate() > 0;
         }
+    }
+    
+    private boolean setPastCourses(Connection connection, int studentId, int courseId, String courseName, String semester){
+        String query = """
+        		INSERT INTO past_courses_for_student (course_id, student_id, course_name, semester)
+        		VALUES(?, ?, ?, ?);
+        		""";
+        
+        try {
+        	PreparedStatement statement = connection.prepareStatement(query);
+        	statement.setInt(1, courseId);
+        	statement.setInt(2, studentId);
+        	statement.setString(3, courseName);
+        	statement.setString(4, semester);
+        	
+        	return statement.executeUpdate() >0;
+        }catch(Exception e) {
+        	e.printStackTrace();
+        	return false;
+        }
+    }
+    
+    private boolean setDefaultFinalGrade(Connection connection, int studentId, int courseId){
+    	String query = """
+    			INSERT INTO past_final_grades (student_id, course_id, final_grade, number_grade)
+    			VALUES (?, ?, ?, ?);
+    			""";
+    	try{
+    		PreparedStatement statement = connection.prepareStatement(query);
+    		statement.setInt(1, studentId);
+    		statement.setInt(2, courseId);
+    		statement.setString(3, "F");
+    		statement.setDouble(4, 0.00);
+    		
+    		return statement.executeUpdate() > 0;
+    		
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    		return false;
+    	}
     }
 
     private boolean sendCourseRequest(Connection connection, int studentId, int courseId) throws SQLException {
